@@ -1,6 +1,6 @@
 import { View, Text, Image } from "react-native"
 type Props = {
-    data: ItemData[]
+    data: number;
 }
 
 import "../global.css"
