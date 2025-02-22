@@ -13,7 +13,7 @@ export const Navbar: React.FC = () => {
       textShadowOffset: { width: 0, height: 0 },
     };
     return (
-      <View className="absolute bottom-0 left-0 right-0 h-24 bg-brand-gray flex-row items-center justify-around">
+      <View className="absolute bottom-0 left-0 right-0 h-24 bg-brand-gray flex-row items-center justify-around border-t border-[#1c1c1c]">
       <Ionicons name="home" color="white" size={42} />
 
     <View
