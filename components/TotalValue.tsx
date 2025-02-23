@@ -7,8 +7,6 @@ import "../global.css"
 import { ItemData } from "types";
 
 export const TotalValue: React.FC<Props> = ( {data} ) => {
-    console.log(data)
-
     return (
       <View className="flex-row h-[25vh] w-full items-center bg-brand-gray justify-between"
       style={{
