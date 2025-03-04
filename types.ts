@@ -5,3 +5,10 @@ export interface ItemData {
     priceUsd?: number,
     icon?: string;
 }
+
+export interface SettingsItem {
+    header: string,
+    description: string,
+    option: string,
+    type?: string
+}

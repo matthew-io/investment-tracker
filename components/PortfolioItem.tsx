@@ -8,9 +8,9 @@ type Props = {
 export const PortfolioItem: React.FC<Props> = ({ data }) => {
     return (
         <View className="flex-row h-[10vh] w-full border-b border-[#1c1c1c]">  
-            <View className="flex-row items-center ml-[2vw]">
+            <View className="flex-row items-center ml-[3vw]">
                 <Image className="h-10 w-10 rounded-full" source={{uri: data.icon}}></Image>
-                <View className="flex-col ml-[2vw]">
+                <View className="flex-col ml-[3vw]">
                     <Text className="text-white text-xl font-bold">{data.symbol}</Text>
                     <Text className="text-white text-sm">{data.amount.toLocaleString()} | ${data.priceUsd?.toLocaleString()}</Text> 
                 </View>
