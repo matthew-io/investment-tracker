@@ -15,22 +15,22 @@ export default function SettingsScreen() {
         },
         {
             header: "Enable face ID",
-            description: "Lorem ipsum, Lorem ipsum, Lorem ipsum, Lorem ipsum, Lorem ipsum, Lorem ipsum",
+            description: "Lock your portfolio data behind face ID. You'll be asked to provide your face ID every time you open the app.",
             option: "Enable"
         },
         {
             header: "Enable AI Portfolio Summaries",
-            description: "Lorem ipsum, Lorem ipsum, Lorem ipsum, Lorem ipsum, Lorem ipsum, Lorem ipsum",
+            description: "Enabling AI portfolio summaries to give a more detailed analysis of the recent state of your portfolio.",
             option: "Enable"
         },
         {
             header: "Summary Frequency",
-            description: "Lorem ipsum, Lorem ipsum, Lorem ipsum, Lorem ipsum, Lorem ipsum, Lorem ipsum",
+            description: "Set how often you would like to receive portfolio summaries.",
             option: "Enable"
         },
         {
             header: "Export Portfolio Data",
-            description: "Lorem ipsum, Lorem ipsum, Lorem ipsum, Lorem ipsum, Lorem ipsum, Lorem ipsum",
+            description: "Export your portfolio data in JSON format.",
             option: "Enable"
         }
     ]
@@ -42,7 +42,7 @@ export default function SettingsScreen() {
                 {
                     settingsItems.map((item) => {
                         return (
-                            <SettingsComponent data={ item } /> 
+                            <SettingsComponent key={item.header} data={ item } /> 
                         )
                     })
                 }

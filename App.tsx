@@ -11,10 +11,10 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <NavigationContainer>
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="Portfolio" component={  PortfolioScreen } />
-          <Stack.Screen name="AddToPortfolio" component={ AddToPortfolioScreen } />
-          <Stack.Screen name="Settings" component={ SettingsScreen } />
+        <Stack.Navigator screenOptions={{ headerShown: false }} >
+          <Stack.Screen name="Portfolio" options={{ animation: 'none' }} component={  PortfolioScreen } />
+          <Stack.Screen name="AddToPortfolio" options={{ animation: 'none' }} component={ AddToPortfolioScreen } />
+          <Stack.Screen name="Settings" options={{ animation: 'none' }} component={ SettingsScreen } />
          </Stack.Navigator>
       </NavigationContainer>
     </GestureHandlerRootView>
