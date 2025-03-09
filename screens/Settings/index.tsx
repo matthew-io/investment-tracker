@@ -1,6 +1,6 @@
 import { Navbar } from "components/Navbar"
-import { SettingsComponent } from "components/SettingsComponent"
-import { SettingsHeader } from "components/SettingsHeader"
+import { OptionComponent } from "components/OptionComponent"
+import { ScreenHeader } from "components/ScreenHeader"
 import { TotalValue } from "components/TotalValue"
 import { Text, View, ScrollView, ActivityIndicator } from "react-native";
 import { SettingsItem } from "types"
@@ -37,12 +37,12 @@ export default function SettingsScreen() {
     
     return (
         <View className="h-full bg-brand-gray">
-            <SettingsHeader data="Settings"/>
+            <ScreenHeader data="Settings"/>
             <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
                 {
                     settingsItems.map((item) => {
                         return (
-                            <SettingsComponent key={item.header} data={ item } /> 
+                            <OptionComponent key={item.header} data={ item } /> 
                         )
                     })
                 }

@@ -1,4 +1,4 @@
-import { View, TextStyle, Text, TouchableOpacity, Modal, StyleSheet, Alert, Image, Pressable } from "react-native";
+import { View, TextStyle, Text, TouchableOpacity, Modal, StyleSheet, Alert, Image, Pressable, Touchable, TouchableWithoutFeedback } from "react-native";
 import React, { useState } from "react";
 import { HomeIcon } from "./HomeIcon";
 import Ionicons from "@expo/vector-icons/Entypo";

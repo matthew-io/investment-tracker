@@ -2,9 +2,11 @@ import { Text, TextInput, View } from "react-native"
 import { Navbar } from "../../components/Navbar"
 import { AddToPortfolioConfirm } from "../../components/AddToPortfolioConfirm"
 import { AddToPortfolioComponent } from "components/AddToPortfolioComponent"
-import { SettingsHeader } from "components/SettingsHeader"
+import { ScreenHeader } from "components/ScreenHeader"
 import { useRoute } from "@react-navigation/native"
 import { useState } from "react"
+import { OptionComponent } from "components/OptionComponent"
+import { ScrollView } from "react-native-gesture-handler"
 
 export default function AddToPortfolioScreen() {
     const route = useRoute();
@@ -13,25 +15,37 @@ export default function AddToPortfolioScreen() {
     const { selectedValue } = route.params as { selectedValue: any };
     console.log("Selected value:", selectedValue)
 
+    const options = [
+        {
+            header: "Buy Price (USD)",
+            description: `Enter the amount purchased in USD`,
+            option: "EnterText"
+        },
+        {
+            header: `Amount Bought (${selectedValue.label.toUpperCase()})`,
+            description: `Enter the total amount bought in ${selectedValue.label.toUpperCase()}`,
+            option: "EnterText"
+        },
+        {
+            header: "Date Purchased",
+            description: "Select the date that the purchase was made on.",
+            option: "EnterDate"
+        },
+        {
+            header: "Notes",
+            description: "Add informational notes to your transaction.",
+            option: "Enable"
+        }
+    ]
+
     return (
         <View className="bg-brand-gray h-full">
-            <SettingsHeader data={`${selectedValue.label.toUpperCase()}/GBP`} />
-            <View className="mx-2 mt-4">
-                <Text className="text-2xl text-white">Buy Price (GBP)</Text>
-                <View className="flex-row items-center border-2 mt-2 h-12 border-white text-white p-2">
-                    <Text className="text-white text-lg">$</Text>
-                    <TextInput
-                        className="flex-1 text-white p-2"
-                        keyboardType="numeric"
-                        value={buyPrice ?? ""}
-                        onChangeText={(text) => setBuyPrice(text)}
-                    />
-                </View>
-            </View>
-            <View className="mx-2 mt-4">
-                <Text className="text-2xl text-white">Amount bought ({selectedValue.label.toUpperCase()})</Text>
-                <TextInput className="border-2 mt-2 h-12 border-white text-white p-2" value={amountBought ?? ""} onChangeText={(text) => setAmountBought(text)} />
-            </View>
+            <ScreenHeader data={`${selectedValue.label.toUpperCase()}/USD`} image={selectedValue.image} />
+            <ScrollView className="">
+                {options.map((option) => {
+                    return <OptionComponent key={option.header} data={option}/>
+                })}
+            </ScrollView>
             <AddToPortfolioConfirm data={{id: selectedValue.value, symbol: selectedValue.label, amount: parseFloat(amountBought)}}/>
             <Navbar />
         </View>
