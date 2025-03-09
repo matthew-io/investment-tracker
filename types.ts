@@ -10,5 +10,7 @@ export interface SettingsItem {
     header: string,
     description: string,
     option: string,
-    type?: string
+    type?: string,
+    onChangeText?: any,
+    onChangeDate?: any
 }

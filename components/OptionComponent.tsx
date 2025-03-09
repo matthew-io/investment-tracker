@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { SettingsItem } from "../types";
 import Ionicons from "@expo/vector-icons/Entypo";
 import { TextInput } from 'react-native';
-import DatePicker from 'react-native-date-picker';
+import DateTimePicker from "@react-native-community/datetimepicker"
 
 type Props = {
     data: SettingsItem;
@@ -15,39 +15,48 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
     const [hasButton, setHasButton] = useState(false);
 
     useEffect(() => {
-        if (data.option == "EnterDate" || data.option == "Enable") {
+        if (data.option == "Enable") {
             setHasButton(true)
         } 
     }, [data.option])
 
-    let rightComponent, mainComponent;
+    let rightComponent;
     if (data.option == "EnterText") {
         rightComponent = <TextInput 
-          className="ml-4 w-40 bg-[#404040] h-9 rounded-[6px]"
+          className="ml-4 w-40 bg-[#404040] px-2 text-white h-9 rounded-[6px]"
+          onChangeText={(text) => {
+            data.onChangeText?.(text);
+          }}
         />
-    } else if (data.option == "Enable" || data.option == "EnterDate") {
+    } else if (data.option == "Enable") {
         rightComponent = <Ionicons name="chevron-right" color="white" size={24} />
-    } 
+    } else if (data.option == "EnterDate") {
+        rightComponent = <DateTimePicker
+            display="default"
+            value={date}
+            mode="date"
+            maximumDate={new Date()}
+            textColor="white"
+            themeVariant="dark"
+            onChange={(event, selectedDate) => {
+                if (selectedDate) {
+                    setDate(selectedDate)
+                    console.log(selectedDate)
+                    data.onChangeDate?.(selectedDate);
+                }
+            }}
+        />
+    }
+    
 
     if (hasButton) {
         return (
-            <TouchableOpacity onPress={() => setDatePickerOpen(true)}>
-                <DatePicker 
-                    modal
-                    open={datePickerOpen}
-                    date={date}
-                    onConfirm={(date) => {
-                        setDatePickerOpen(false)
-                        setDate(date)
-                    }}
-                    onCancel={() => {
-                        setDatePickerOpen(false)
-                    }}
-                />
+            <TouchableOpacity>
                 <View className="h-[14vh] w-full border-b flex-row items-center justify-between px-4">
                     <View className="flex-1">
                         <Text className="text-white font-bold text-xl">{data.header}</Text>
                         <Text className="text-white text-sm">{data.description}</Text>
+             
                     </View>
                     {rightComponent}
                 </View>

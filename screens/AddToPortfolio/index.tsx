@@ -11,26 +11,43 @@ import { ScrollView } from "react-native-gesture-handler"
 export default function AddToPortfolioScreen() {
     const route = useRoute();
     const [buyPrice, setBuyPrice] = useState();
+    const [buyDate, setBuyDate] = useState();
     const [amountBought, setAmountBought] = useState();
     const { selectedValue } = route.params as { selectedValue: any };
     console.log("Selected value:", selectedValue)
+
+    const handleBuyPriceChange = (value: any) => {
+        setBuyPrice(value);
+    }
+
+    const handleAmountBoughtChange = (value: any) => {
+        setAmountBought(value);
+    }
+
+    const handleBuyDateChange = (value: any) => {
+        setBuyDate(value);
+    } 
 
     const options = [
         {
             header: "Buy Price (USD)",
             description: `Enter the amount purchased in USD`,
-            option: "EnterText"
+            option: "EnterText",
+            onChangeText: handleBuyPriceChange
         },
         {
             header: `Amount Bought (${selectedValue.label.toUpperCase()})`,
             description: `Enter the total amount bought in ${selectedValue.label.toUpperCase()}`,
-            option: "EnterText"
+            option: "EnterText",
+            onChangeText: handleAmountBoughtChange
         },
         {
             header: "Date Purchased",
             description: "Select the date that the purchase was made on.",
-            option: "EnterDate"
+            option: "EnterDate",
+            onChangeDate: handleBuyDateChange
         },
+        // implementation todo
         {
             header: "Notes",
             description: "Add informational notes to your transaction.",

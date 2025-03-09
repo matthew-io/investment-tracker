@@ -77,6 +77,7 @@ export default function PortfolioScreen() {
     if (newData && databaseExists && !hasInserted) {
       insertData(newData);
       setHasInserted(true);
+      fetchCoinData();
     } else if (!newData) {
       setHasInserted(false)
     }
