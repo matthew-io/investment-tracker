@@ -4,6 +4,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import PortfolioScreen from 'screens/Portfolio';
 import AddToPortfolioScreen from 'screens/AddToPortfolio';
 import SettingsScreen from 'screens/Settings';
+import AssetInfoScreen from 'screens/AssetInfoScreen';
 
 const Stack = createStackNavigator();
 
@@ -15,6 +16,7 @@ export default function App() {
           <Stack.Screen name="Portfolio" options={{ animation: 'none' }} component={  PortfolioScreen } />
           <Stack.Screen name="AddToPortfolio" options={{ animation: 'none' }} component={ AddToPortfolioScreen } />
           <Stack.Screen name="Settings" options={{ animation: 'none' }} component={ SettingsScreen } />
+          <Stack.Screen name="AssetInfoScreen" options={{ animation: 'none' }} component={ AssetInfoScreen } />
          </Stack.Navigator>
       </NavigationContainer>
     </GestureHandlerRootView>

@@ -47,7 +47,6 @@ export const Navbar: React.FC<Props> = ({ data }) => {
               transparent={ true }
               visible={ modalVisible }
               onRequestClose={() => {
-                Alert.alert('Modal has been closed.');
                 setModalVisible( !modalVisible );
               }}
             >
@@ -55,6 +54,7 @@ export const Navbar: React.FC<Props> = ({ data }) => {
                 <View style={styles.centeredView}>
                   <View style={styles.modalView}>
                     <Text style={styles.modalText}>Select a coin from below...</Text>
+                    
                     <Dropdown 
                       style={styles.dropdown}
                       placeholderStyle={styles.placeholderStyle}
@@ -85,12 +85,9 @@ export const Navbar: React.FC<Props> = ({ data }) => {
                       labelField={"label"} 
                       valueField={"label"}    
                   />
-                  {/* <View className="w-full mt-4 justify-around bg-brand-gray flex-row items-center border-[#1c1c1c]">
-                    <Text className="text-xl rounded-[16px] border-2 p-4 bg-red-500 text-white" onPress={() => {setModalVisible(false)}}>CANCEL</Text>
-                      <Text className="text-xl border-2 rounded-[16px] bg-green-500  p-4 text-white" onPress={() => {
-                        navigation.navigate("AddToPortfolio", { selectedValue })
-                        setModalVisible(false)}}>CONFIRM</Text>
-                    </View> */}
+                    <TouchableOpacity  className='p-4 bg-red-500 mt-4 rounded-[12px]' onPress={() => setModalVisible(false)}>
+                        <Text className="text-white">Cancel</Text>
+                      </TouchableOpacity>
                   </View>
                 </View>
               </BlurView>

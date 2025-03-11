@@ -12,5 +12,7 @@ export interface SettingsItem {
     option: string,
     type?: string,
     onChangeText?: any,
-    onChangeDate?: any
+    onChangeDate?: any,
+    onChangeNotesText?: any,
+    textValue?: any
 }

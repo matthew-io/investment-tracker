@@ -12,9 +12,9 @@ export default function AddToPortfolioScreen() {
     const route = useRoute();
     const [buyPrice, setBuyPrice] = useState();
     const [buyDate, setBuyDate] = useState();
+    const [notes, setNotes] = useState();
     const [amountBought, setAmountBought] = useState();
     const { selectedValue } = route.params as { selectedValue: any };
-    console.log("Selected value:", selectedValue)
 
     const handleBuyPriceChange = (value: any) => {
         setBuyPrice(value);
@@ -27,6 +27,10 @@ export default function AddToPortfolioScreen() {
     const handleBuyDateChange = (value: any) => {
         setBuyDate(value);
     } 
+
+    const handleNotesTextChange = (value: any) => {
+        setNotes(value)
+    }
 
     const options = [
         {
@@ -51,7 +55,8 @@ export default function AddToPortfolioScreen() {
         {
             header: "Notes",
             description: "Add informational notes to your transaction.",
-            option: "Enable"
+            option: "Enable",
+            onChangeText: handleNotesTextChange
         }
     ]
 
@@ -63,7 +68,7 @@ export default function AddToPortfolioScreen() {
                     return <OptionComponent key={option.header} data={option}/>
                 })}
             </ScrollView>
-            <AddToPortfolioConfirm data={{id: selectedValue.value, symbol: selectedValue.label, amount: parseFloat(amountBought)}}/>
+            <AddToPortfolioConfirm data={{id: selectedValue.value, symbol: selectedValue.label, date: buyDate, notes: notes, amount: parseFloat(amountBought)}}/>
             <Navbar />
         </View>
     )
