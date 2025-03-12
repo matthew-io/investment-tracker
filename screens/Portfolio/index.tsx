@@ -24,12 +24,21 @@ export default function PortfolioScreen() {
   const [databaseExists, setDatabaseExists] = useState(false);
   const [hasInserted, setHasInserted] = useState(false);
 
+  const statement = `
+  CREATE TABLE IF NOT EXISTS test (
+    id TEXT PRIMARY KEY NOT NULL,
+    symbol TEXT NOT NULL,
+    amount REAL NOT NULL,
+    note TEXT
+  );
+`;
+
   useEffect(() => {
     const setupDatabase = async () => {
       try {
         await db.execAsync(statement);
         setDatabaseExists(true);
-        await fetchCoinData();
+        await fetchPersonalCoinData();
         await fetchAllCoinData();
       } catch (error) {
         await db.execAsync("ROLLBACK;");
@@ -57,13 +66,13 @@ export default function PortfolioScreen() {
           console.log(`Updated holdings for ${data.symbol}, added ${data.amount}`);
         } else {
           await db.execAsync(`
-            INSERT INTO test (id, symbol, amount) 
-            VALUES ('${data.id}', '${data.symbol}', ${parseFloat(data.amount)});
+            INSERT INTO test (id, symbol, amount, notes) 
+            VALUES ('${data.id}', '${data.symbol}', ${parseFloat(data.amount)}, '${data.notes}');
           `);
           console.log(`Added new holding for ${data.symbol}`);
         }
         
-        await fetchCoinData();
+        await fetchPersonalCoinData();
       } catch (error) {
         console.error("Failed to insert data:", error);
         try {
@@ -77,7 +86,7 @@ export default function PortfolioScreen() {
     if (newData && databaseExists && !hasInserted) {
       insertData(newData);
       setHasInserted(true);
-      fetchCoinData();
+      fetchPersonalCoinData();
     } else if (!newData) {
       setHasInserted(false)
     }
@@ -92,7 +101,7 @@ export default function PortfolioScreen() {
         method: 'GET',
         headers: {
           accept: 'application/json',
-          'x-cg-demo-api-key': 'CG-1RnvLQLSwVbEuuVaPHQnKE5z	'
+          'x-cg-demo-api-key': COINGECKO_API_KEY
         }
       };
 
@@ -107,12 +116,12 @@ export default function PortfolioScreen() {
     }
   }
 
-  const fetchCoinData = async () => {
+  const fetchPersonalCoinData = async () => {
     try {
       setLoading(true);
       let runningTotal = 0;
   
-      const dbData = await db.getAllAsync("SELECT id, symbol, amount FROM test");
+      const dbData = await db.getAllAsync("SELECT id, symbol, amount, note FROM test");
   
       if (dbData.length === 0) {
         console.log("No holdings found in database.");
@@ -153,15 +162,6 @@ export default function PortfolioScreen() {
     }
   };
 
-  const statement = `
-    CREATE TABLE IF NOT EXISTS test (
-      id TEXT PRIMARY KEY NOT NULL,
-      symbol TEXT NOT NULL,
-      amount REAL NOT NULL
-    );
-  `;
-
- 
   return (
     <View className="flex-1 bg-brand-gray">
       {loading && (
@@ -174,9 +174,19 @@ export default function PortfolioScreen() {
       <TotalValue data={totalValue} />
       <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
   
-        {holdings.length > 0 &&
-          holdings.map((item) => (
-            <PortfolioItem key={item.symbol} data={{ ...item, priceUsd: prices[item.id] ?? 0, icon: icons[item.id] }} />
+      {holdings.length > 0 &&
+        [...holdings] 
+          .sort((a, b) => (prices[b.id] * b.amount) - (prices[a.id] * a.amount))
+          .map((item) => (
+            <PortfolioItem 
+              key={item.symbol} 
+              data={{ 
+                ...item, 
+                priceUsd: prices[item.id] ?? 0, 
+                icon: icons[item.id], 
+                note: item.note 
+              }} 
+            />
           ))}
       </ScrollView>
   

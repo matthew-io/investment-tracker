@@ -13,9 +13,9 @@ export const PortfolioItem: React.FC<Props> = ({ data }) => {
     let totalAmount;
 
     if (String(data.amount * data.priceUsd).length > 6) {
-        totalAmount = String(data.amount * data.priceUsd).slice(0, 7)
+        totalAmount = data.amount * data.priceUsd
       } else {
-        totalAmount = String(data.amount * data.priceUsd)
+        totalAmount = data.amount * data.priceUsd
       }
 
     return (
@@ -29,9 +29,13 @@ export const PortfolioItem: React.FC<Props> = ({ data }) => {
                     </View>
                 </View>
                 <View className="flex-row items-center justify-end flex-1 mr-[2vw]">
-                    <View className="flex-col ml-[1vw]">
-                        <Text className="text-white text-right text-xl ml-[1vw] font-bold">  ${ (totalAmount).toLocaleString() }                         </Text>
-                        <Text className="text-green-500 ml-[1vw] text-sm">+6.66% from 24h ago</Text> 
+                    <View className="flex-col ml-[1vw] items-end">
+                        <Text className="text-white text-right text-xl ml-[1vw] font-bold">  
+                            ${totalAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}                         
+                        </Text>
+                        <Text className="text-green-500 ml-[1vw] text-sm">
+                            +6.66% from 24h ago
+                        </Text> 
                     </View>
                 </View>
             </View>

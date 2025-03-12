@@ -2,6 +2,7 @@ export interface ItemData {
     id: string,
     symbol: string,
     amount: number,
+    note?: string,
     priceUsd?: number,
     icon?: string;
 }
@@ -15,4 +16,5 @@ export interface SettingsItem {
     onChangeDate?: any,
     onChangeNotesText?: any,
     textValue?: any
+    noteValue?: any
 }

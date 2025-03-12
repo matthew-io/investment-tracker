@@ -20,6 +20,7 @@ export default function AssetInfoScreen() {
             header: "Edit Notes",
             description: "Edit transaction notes",
             option: "Enable",
+            noteValue: assetData.note
         },
         {
             header: "Remove asset",
@@ -28,13 +29,14 @@ export default function AssetInfoScreen() {
         }
     ]
 
+
     return (
         <View className="h-full bg-brand-gray">
             <ScreenHeader image={assetData.icon} data={assetData.symbol.toUpperCase()} />
             {
-                assetOptions.map((asset) => {
+                assetOptions.map((option) => {
                     return (
-                        <OptionComponent key={asset.header} data={ asset }/>
+                        <OptionComponent key={option.header} data={ option }/>
                     )
                 })
             }

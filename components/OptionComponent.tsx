@@ -15,7 +15,11 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
     const [datePickerOpen, setDatePickerOpen] = useState(false)
     const [hasButton, setHasButton] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
-    const [notesText, setNotesText] = useState();
+    const [notesText, setNotesText] = useState(data.noteValue || "");
+
+    useEffect(() => {
+        setNotesText(data.noteValue && data.noteValue !== "undefined" ? data.noteValue : "")
+    }, [data.noteValue])
 
     useEffect(() => {
         if (data.option == "Enable") {
@@ -48,7 +52,6 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
             onChange={(event, selectedDate) => {
                 if (selectedDate) {
                     setDate(selectedDate)
-                    console.log(selectedDate)
                     data.onChangeDate?.(selectedDate);
                 }
             }}
@@ -85,8 +88,7 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
                                 onChangeText={(text) => 
                                     {
                                         setNotesText(text)
-                                        console.log(notesText)
-                                        data.onChangeNotesText?.(notesText)
+                                        data.onChangeNotesText?.(text)
                                     }
                                 }
                                 value={notesText}

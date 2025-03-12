@@ -56,7 +56,7 @@ export default function AddToPortfolioScreen() {
             header: "Notes",
             description: "Add informational notes to your transaction.",
             option: "Enable",
-            onChangeText: handleNotesTextChange
+            onChangeNotesText: handleNotesTextChange
         }
     ]
 
