@@ -11,7 +11,7 @@ type Props = {
   data?: any,
 }
 
-let coinData;
+let coinData: any[];
 
 export const Navbar: React.FC<Props> = ({ data }) => {
   if (data) {
@@ -26,6 +26,7 @@ export const Navbar: React.FC<Props> = ({ data }) => {
   const route = useRoute();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedValue, setSelectedValue] = useState<number | null>(null);
+  const [assetType, setAssetType] = useState("");
   const navigation = useNavigation();
   const handleModal = () => {
     setModalVisible(true)
@@ -53,41 +54,80 @@ export const Navbar: React.FC<Props> = ({ data }) => {
               <BlurView intensity={5} style={styles.blurBackground}>
                 <View style={styles.centeredView}>
                   <View style={styles.modalView}>
-                    <Text style={styles.modalText}>Select a coin from below...</Text>
-                    
-                    <Dropdown 
-                      style={styles.dropdown}
-                      placeholderStyle={styles.placeholderStyle}
-                      selectedTextStyle={styles.selectedTextStyle}
-                      inputSearchStyle={styles.inputSearchStyle}
-                      containerStyle={styles.dropdownList}
-                      placeholder="Select..."
-                      data={coinData}
-                      search
-                      maxHeight={300}
-                      value={selectedValue} 
-                      onChange={(item) => {
-                        setModalVisible(false);
-                        navigation.navigate("AddToPortfolio", { selectedValue: item })
-                      }} 
-                      renderItem={(item) => (
-                        <View style={styles.itemContainer}>
-                          <Image source={{ uri: item.image }} style={styles.itemImage} />
-                          <Text style={styles.itemText}>{item.label.toUpperCase()}</Text>
+                    {assetType == "" ? (
+                      <><Text style={styles.modalText} className="text-lg">
+                        Select asset type
+                      </Text><View className="flex-row items-center mt-4">
+                          <TouchableOpacity onPress={() => setAssetType("Crypto")}>
+                            <View className="border-[1px] rounded-[12px] px-12 py-12 justify-center border-white mx-2">
+                              <Text className="text-white text-md">
+                                Crypto
+                              </Text>
+                            </View>
+                          </TouchableOpacity>
+                          <TouchableOpacity onPress={() => setAssetType("Stock")}>
+                            <View className="border-[1px] rounded-[12px] px-12 py-12 border-white mx-2">
+                              <Text className="text-white text-md">
+                                Stock
+                              </Text>
+                            </View>
+                          </TouchableOpacity>
+                          
                         </View>
-                      )}
-                      renderLeftIcon={() => {
-                        const selectedItem = coinData.find((item) => item.label === selectedValue);
-                        return selectedItem ? (
-                          <Image source={{ uri: selectedItem.image }} style={styles.itemImage} />
-                        ) : null;
-                      }}
-                      labelField={"label"} 
-                      valueField={"label"}    
-                  />
-                    <TouchableOpacity  className='p-4 bg-red-500 mt-4 rounded-[12px]' onPress={() => setModalVisible(false)}>
-                        <Text className="text-white">Cancel</Text>
-                      </TouchableOpacity>
+                        <TouchableOpacity className='p-4 bg-red-500 mt-8 rounded-[12px]' onPress={() => {
+                            setModalVisible(false)
+                          }}>
+                            <Text className="text-white">Cancel</Text>
+                          </TouchableOpacity>
+                        </>
+                        
+                    )
+                  :
+                  (
+                        <>
+                        <Text style={styles.modalText}>
+                            {assetType == "Crypto" ? "Select a coin from below..." : "Select a stock from below..."}
+                          </Text>
+                          <Dropdown
+                          style={styles.dropdown}
+                          placeholderStyle={styles.placeholderStyle}
+                          selectedTextStyle={styles.selectedTextStyle}
+                          inputSearchStyle={styles.inputSearchStyle}
+                          containerStyle={styles.dropdownList}
+                          placeholder="Select..."
+                          data={coinData}
+                          search
+                          maxHeight={300}
+                          value={selectedValue}
+                          onChange={(item) => {
+                            setModalVisible(false);
+                            navigation.navigate("AddToPortfolio", { selectedValue: item });
+                          } }
+                          renderItem={(item) => (
+                            <View style={styles.itemContainer}>
+                              <Image source={{ uri: item.image }} style={styles.itemImage} />
+                              <Text style={styles.itemText}>{item.label.toUpperCase()}</Text>
+                            </View>
+                          )}
+                          renderLeftIcon={() => {
+                            const selectedItem = coinData.find((item) => item.label === selectedValue);
+                            return selectedItem ? (
+                              <Image source={{ uri: selectedItem.image }} style={styles.itemImage} />
+                            ) : null;
+                          } }
+                          labelField={"label"}
+                          valueField={"label"} />
+                          <TouchableOpacity className='p-4 bg-red-500 mt-4 rounded-[12px]' onPress={() => {
+                            setModalVisible(false)
+                            setTimeout(() => {
+                              setAssetType("")  
+                            }, 500)
+                          }}>
+                            <Text className="text-white">Cancel</Text>
+                          </TouchableOpacity></>
+                  )}
+                    
+                    
                   </View>
                 </View>
               </BlurView>
