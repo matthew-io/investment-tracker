@@ -13,8 +13,6 @@ export default function AssetInfoScreen() {
     const [note, setNote] = useState(assetData.note);
     const [amount, setAmount] = useState(assetData.amount.toString())
 
-    console.log(note)
-
     const assetOptions = [
         {
             header: "Amount Bought",
@@ -33,7 +31,8 @@ export default function AssetInfoScreen() {
         {
             header: "Remove asset",
             description: "Remove all record of the asset",
-            option: "Enable"
+            option: "Remove",
+            id: assetData.id
         }
     ]
 
@@ -44,7 +43,7 @@ export default function AssetInfoScreen() {
             {
                 assetOptions.map((option) => {
                     return (
-                        <OptionComponent key={option.header} data={ option }/>
+                        <OptionComponent key={option.header} data={ option } />
                     )
                 })
             }

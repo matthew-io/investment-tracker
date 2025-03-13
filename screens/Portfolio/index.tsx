@@ -24,7 +24,6 @@ export default function PortfolioScreen() {
   const [totalValue, setTotalValue] = useState(0);
   const [allCoinData, setAllCoinData] = useState();
   const [databaseExists, setDatabaseExists] = useState(false);
-  const [hasInserted, setHasInserted] = useState(false);
 
   const statement = `
   CREATE TABLE IF NOT EXISTS test (

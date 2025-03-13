@@ -5,12 +5,16 @@ import { BlurView } from "expo-blur";
 import Ionicons from "@expo/vector-icons/Entypo";
 import { TextInput } from 'react-native';
 import DateTimePicker from "@react-native-community/datetimepicker"
+import { useNavigation } from '@react-navigation/native';
+import { db } from "../database"
 
 type Props = {
     data: SettingsItem;
 };
 
 export const OptionComponent: React.FC<Props> = ({ data }) => {
+    const navigation = useNavigation();
+
     const [date, setDate] = useState(new Date());
     const [datePickerOpen, setDatePickerOpen] = useState(false)
     const [hasButton, setHasButton] = useState(false);
@@ -22,7 +26,7 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
     }, [data.noteValue])
 
     useEffect(() => {
-        if (data.option == "Enable") {
+        if (data.option == "Enable" || data.option == "Remove") {
             setHasButton(true)
         } else {
             setHasButton(false)
@@ -38,7 +42,7 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
           }}
           value={data.textValue}
         />
-    } else if (data.option == "Enable") {
+    } else if (data.option == "Enable"  || data.option == "Remove") {
         rightComponent = 
         <Ionicons name="chevron-right" color="white" size={24} />
     } else if (data.option == "EnterDate") {
@@ -72,32 +76,47 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
                     <BlurView intensity={5} style={styles.blurBackground}>
                         <View style={styles.modalView}>
                             <Text style={styles.modalText}>
-                                Edit your transaction notes below...
+                                {data.option == "Remove" 
+                                ? "Are you sure you want to remove this asset?"
+                                : "Edit your transaction notes below..."
+                                }
                             </Text>
+                            {data.option !== "Remove" && (
                             <TextInput
                                 className="w-72"
                                 style={{
-                                    maxHeight: 200,
-                                    backgroundColor: '#404040',
-                                    color: 'white',
-                                    borderRadius: 12,
-                                    padding: 10,
+                                maxHeight: 200,
+                                backgroundColor: '#404040',
+                                color: 'white',
+                                borderRadius: 12,
+                                padding: 10,
                                 }}
                                 multiline
                                 textAlignVertical="top"
-                                onChangeText={(text) => 
-                                    {
-                                        setNotesText(text)
-                                        data.onChangeNotesText?.(text)
-                                    }
-                                }
+                                onChangeText={(text) => {
+                                setNotesText(text)
+                                data.onChangeNotesText?.(text)
+                                }}
                                 value={notesText}
                             />
+                            )}
                             <View className="flex-row w-2/3 mt-4 justify-between items-center">
                                <TouchableOpacity className="p-4 bg-red-500 rounded-[12px]"  onPress={() => setModalOpen(false)}>
                                     <Text className="text-white">Cancel</Text>
                                </TouchableOpacity>
-                               <TouchableOpacity  className='p-4 bg-green-500 rounded-[12px]' onPress={() => setModalOpen(false)}>
+                               <TouchableOpacity  className='p-4 bg-green-500 rounded-[12px]' onPress={async () => {
+                                    setModalOpen(false)
+                                    if (data.option == "Remove") {
+                                        let statement = `
+                                            DELETE FROM test
+                                            WHERE id = '${data.id}';
+                                        `
+                                        await setModalOpen(false)
+                                        await db.execAsync(statement)
+                                        navigation.navigate("Portfolio")
+                                    }
+                                }
+                                }>
                                     <Text className="text-white">Confirm</Text>
                                </TouchableOpacity>
                             </View>
