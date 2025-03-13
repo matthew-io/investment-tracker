@@ -4,23 +4,31 @@ import { Navbar } from "components/Navbar";
 import { OptionComponent } from "components/OptionComponent";
 import { ScreenHeader } from "components/ScreenHeader";
 import { View, Text } from "react-native";
+import { useState } from "react"
 
 export default function AssetInfoScreen() {
     const route = useRoute();
     const assetData = route.params?.data
+
+    const [note, setNote] = useState(assetData.note);
+    const [amount, setAmount] = useState(assetData.amount.toString())
+
+    console.log(note)
 
     const assetOptions = [
         {
             header: "Amount Bought",
             description: `Total amount bought (${assetData.symbol.toUpperCase()})`,
             option: "EnterText",
-            textValue: assetData.amount.toLocaleString()
+            textValue: amount,
+            onChangeText: (newAmount) => setAmount(newAmount)
         },
         {
             header: "Edit Notes",
             description: "Edit transaction notes",
             option: "Enable",
-            noteValue: assetData.note
+            noteValue: note,
+            onChangeNotesText: (updatedNote: any) => setNote(updatedNote),
         },
         {
             header: "Remove asset",
@@ -40,7 +48,7 @@ export default function AssetInfoScreen() {
                     )
                 })
             }
-            <AddToPortfolioConfirm />
+            <AddToPortfolioConfirm data={{ id: assetData.id, symbol: assetData.symbol, amount: amount, note: note, mode: "update" }}/>
             <Navbar />
         </View>
     

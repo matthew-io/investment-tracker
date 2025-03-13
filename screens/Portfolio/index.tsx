@@ -7,13 +7,15 @@ import { PortfolioItem } from '../../components/PortfolioItem'
 import { ItemData } from 'types';
 import { COINGECKO_API_KEY } from "@env";
 import { db } from "../../database"
-import { useRoute } from '@react-navigation/native';
+import { useFocusEffect, useRoute } from '@react-navigation/native';
 
 import '../../global.css';
 
 export default function PortfolioScreen() {
   const route = useRoute();
   const newData = route.params?.data;
+
+  console.log(newData)
 
   const [holdings, setHoldings] = useState<ItemData[]>([])
   const [prices, setPrices] = useState<Record<string, number>>({});
@@ -32,6 +34,12 @@ export default function PortfolioScreen() {
     note TEXT
   );
 `;
+
+useFocusEffect(
+  React.useCallback(() => {
+    fetchPersonalCoinData();
+  }, [])
+)
 
   useEffect(() => {
     const setupDatabase = async () => {
@@ -58,15 +66,26 @@ export default function PortfolioScreen() {
         const existingRecord = await db.getAllAsync(`SELECT amount FROM test WHERE id = '${data.id}'`);
         
         if (existingRecord.length > 0) {
-          await db.execAsync(`
-            UPDATE test 
-            SET amount = amount + ${parseFloat(data.amount)} 
-            WHERE id = '${data.id}';
-          `);
+          if (newData.mode == "update") {
+            await db.execAsync(`
+              UPDATE test 
+              SET amount = ${data.amount}, 
+              note = '${data.note}'
+              WHERE id = '${data.id}';
+            `);
+          } else {
+            await db.execAsync(`
+              UPDATE test 
+              SET amount = amount + ${parseFloat(data.amount)}, 
+              note = '${data.note}'
+              WHERE id = '${data.id}';
+            `);
+          }
+          
           console.log(`Updated holdings for ${data.symbol}, added ${data.amount}`);
         } else {
           await db.execAsync(`
-            INSERT INTO test (id, symbol, amount, notes) 
+            INSERT INTO test (id, symbol, amount, note) 
             VALUES ('${data.id}', '${data.symbol}', ${parseFloat(data.amount)}, '${data.notes}');
           `);
           console.log(`Added new holding for ${data.symbol}`);
@@ -83,14 +102,17 @@ export default function PortfolioScreen() {
         }
       }
     };
-    if (newData && databaseExists && !hasInserted) {
-      insertData(newData);
-      setHasInserted(true);
-      fetchPersonalCoinData();
-    } else if (!newData) {
-      setHasInserted(false)
+
+    const doInsertAndFetch = async () => {
+      if (newData && databaseExists) {
+        await insertData(newData);
+        await fetchPersonalCoinData();
+      }
     }
-  }, [newData, databaseExists, hasInserted]);
+    
+    doInsertAndFetch()
+  }, [newData, databaseExists]);
+  
 
   const fetchAllCoinData = async () => {
     try {
