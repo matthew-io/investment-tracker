@@ -6,22 +6,34 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur"; 
 import { Dropdown } from "react-native-element-dropdown";
+import { SvgUri } from "react-native-svg";
 
 type Props = {
-  data?: any,
+  coin?: any,
+  stock?: any,
 }
 
 let coinData: any[];
+let stockData: any[];
 
-export const Navbar: React.FC<Props> = ({ data }) => {
-  if (data) {
-    coinData = data.map((item: any) => ({
+export const Navbar: React.FC<Props> = ({ coin, stock }) => {
+  if (coin) {
+    coinData = coin.map((item: any) => ({
       label: item.symbol,
       value: item.id,
       image: item.image,
       priceUsd: item.current_price,
     }));  
+  if (stock) {
+
+      stockData = stock.map((item: any) => (
+      {
+        ticker: item.T,
+        close: item.c,
+      }));
   }
+
+}
  
   const route = useRoute();
   const [modalVisible, setModalVisible] = useState(false);
@@ -95,7 +107,7 @@ export const Navbar: React.FC<Props> = ({ data }) => {
                           inputSearchStyle={styles.inputSearchStyle}
                           containerStyle={styles.dropdownList}
                           placeholder="Select..."
-                          data={coinData}
+                          data={assetType == "Crypto" ? coinData : stockData}
                           search
                           maxHeight={300}
                           value={selectedValue}
@@ -103,18 +115,27 @@ export const Navbar: React.FC<Props> = ({ data }) => {
                             setModalVisible(false);
                             navigation.navigate("AddToPortfolio", { selectedValue: item });
                           } }
-                          renderItem={(item) => (
-                            <View style={styles.itemContainer}>
-                              <Image source={{ uri: item.image }} style={styles.itemImage} />
-                              <Text style={styles.itemText}>{item.label.toUpperCase()}</Text>
-                            </View>
-                          )}
-                          renderLeftIcon={() => {
-                            const selectedItem = coinData.find((item) => item.label === selectedValue);
-                            return selectedItem ? (
-                              <Image source={{ uri: selectedItem.image }} style={styles.itemImage} />
-                            ) : null;
-                          } }
+                          renderItem={(item: any) => {
+                            if (assetType === "Crypto") {
+                              return (
+                                <View style={styles.itemContainer}>
+                                  <Image source={{ uri: item.image }} style={styles.itemImage} />
+                                  <Text style={styles.itemText}>{item.label.toUpperCase()}</Text>
+                                </View>
+                              );
+                            } else {
+                              return (
+                                <View style={styles.itemContainer}>
+                                  {/* sends wayyyy too many requests. need to find alternative */}
+                                  {/* <SvgUri uri={`https://assets.parqet.com/logos/symbol/${item.ticker}`} style={styles.itemImage} /> */}
+                                  <Text style={styles.itemText}>
+                                    {item.ticker}
+                                  </Text>
+                                </View>
+                              );
+                            }
+                          }}
+
                           labelField={"label"}
                           valueField={"label"} />
                           <TouchableOpacity className='p-4 bg-red-500 mt-4 rounded-[12px]' onPress={() => {
@@ -124,7 +145,7 @@ export const Navbar: React.FC<Props> = ({ data }) => {
                             }, 500)
                           }}>
                             <Text className="text-white">Cancel</Text>
-                          </TouchableOpacity></>
+                        </TouchableOpacity></>
                   )}
                     
                     

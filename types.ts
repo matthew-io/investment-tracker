@@ -7,6 +7,12 @@ export interface ItemData {
     icon?: string;
 }
 
+export interface StockData {
+    ticker: string,
+    close: number,
+    icon?: string
+}
+
 export interface SettingsItem {
     header: string,
     description: string,

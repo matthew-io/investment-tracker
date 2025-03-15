@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { restClient } from '@polygon.io/client-js';
 import { StatusBar } from 'expo-status-bar';
 import { Text, View, ScrollView, ActivityIndicator } from "react-native";
 import { Navbar } from '../../components/Navbar';
 import { TotalValue } from '../../components/TotalValue';
 import { PortfolioItem } from '../../components/PortfolioItem'
 import { ItemData } from 'types';
-import { COINGECKO_API_KEY } from "@env";
+import { COINGECKO_API_KEY, POLYGON_IO_API_KEY } from "@env";
 import { db } from "../../database"
 import { useFocusEffect, useRoute } from '@react-navigation/native';
 
@@ -15,8 +16,6 @@ export default function PortfolioScreen() {
   const route = useRoute();
   const newData = route.params?.data;
 
-  console.log(newData)
-
   const [holdings, setHoldings] = useState<ItemData[]>([])
   const [prices, setPrices] = useState<Record<string, number>>({});
   const [icons, setIcons] = useState<Record<string, string>>({});
@@ -24,6 +23,7 @@ export default function PortfolioScreen() {
   const [totalValue, setTotalValue] = useState(0);
   const [allCoinData, setAllCoinData] = useState();
   const [databaseExists, setDatabaseExists] = useState(false);
+  const [allStockData, setAllStockData] = useState();
 
   const statement = `
   CREATE TABLE IF NOT EXISTS test (
@@ -41,12 +41,19 @@ useFocusEffect(
 )
 
   useEffect(() => {
+    const fetchAllData = async () => {
+      await fetchPersonalCoinData();
+      await fetchAllCoinData();
+      await fetchAllStockData();
+    }
+
     const setupDatabase = async () => {
       try {
-        await db.execAsync(statement);
-        setDatabaseExists(true);
-        await fetchPersonalCoinData();
-        await fetchAllCoinData();
+        if (!databaseExists) {
+          await db.execAsync(statement);
+          setDatabaseExists(true);  
+        }
+        await fetchAllData();
       } catch (error) {
         await db.execAsync("ROLLBACK;");
         console.error("Database setup failed:", error);
@@ -111,6 +118,27 @@ useFocusEffect(
     
     doInsertAndFetch()
   }, [newData, databaseExists]);
+
+  const fetchAllStockData = async () => {
+    try {
+      setLoading(true);
+      const rest = restClient(POLYGON_IO_API_KEY)
+      
+      const data = await rest.stocks.aggregatesGroupedDaily("2025-03-12", {
+        adjusted: "true",
+        include_otc: "true"
+      }) 
+
+      const sortedData = data.results.sort((a, b) => b.v - a.v);
+      const top1000ByVolume = sortedData.slice(0, 1000);
+
+      setAllStockData(top1000ByVolume)
+    } catch (e) {
+      console.error("Couldn't fetch stock data, error: ", e.message)
+    } finally {
+      setLoading(false)
+    }
+  }
   
 
   const fetchAllCoinData = async () => {
@@ -162,6 +190,8 @@ useFocusEffect(
       const data = await response.json();
   
       setHoldings(dbData);
+
+      console.log("DB data", dbData)
   
       const newPrices: Record<string, number> = {};
       const newIcons: Record<string, string> = {};
@@ -211,7 +241,7 @@ useFocusEffect(
           ))}
       </ScrollView>
   
-      <Navbar data={allCoinData}/>
+      <Navbar coin={allCoinData} stock={allStockData}/>
     </View>
   );  
 }
