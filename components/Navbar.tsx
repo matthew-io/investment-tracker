@@ -7,6 +7,7 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur"; 
 import { Dropdown } from "react-native-element-dropdown";
 import { SvgUri } from "react-native-svg";
+import { useCameraPermissions } from "expo-camera";
 
 type Props = {
   coin?: any,
@@ -21,10 +22,11 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
   const navigation = useNavigation();
   const [coinData, setCoinData] = useState<any[]>([]);
   const [stockData, setStockData] = useState<any[]>([]);
+  const [cryptoEntryMethod, setCryptoEntryMethod] = useState<"" | "manual" | "qr">("");
+
+  const [permission, requestPermission] = useCameraPermissions();
   
-  // Process coin and stock data safely using useEffect
   useEffect(() => {
-    // Only process coin data if it exists and is an array
     if (coin && Array.isArray(coin)) {
       const processedCoinData = coin.map((item: any) => ({
         label: item.symbol,
@@ -35,10 +37,9 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
       setCoinData(processedCoinData);
     }
     
-    // Only process stock data if it exists and is an array
     if (stock && Array.isArray(stock)) {
       const processedStockData = stock.map((item: any) => ({
-        label: item.T, // Adding label field for dropdown
+        label: item.T, 
         ticker: item.T,
         close: item.c,
       }));
@@ -48,6 +49,12 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
 
   const handleModal = () => {
     setModalVisible(true);
+  };
+
+   const handleCancel = () => {
+    setModalVisible(false);
+    setAssetType("");
+    setCryptoEntryMethod("");
   };
 
   return (
@@ -66,47 +73,90 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
               animationType="fade"
               transparent={true}
               visible={modalVisible}
-              onRequestClose={() => {
-                setModalVisible(!modalVisible);
-              }}
+              onRequestClose={() => setModalVisible(false)}
             >
               <BlurView intensity={5} style={styles.blurBackground}>
                 <View style={styles.centeredView}>
                   <View style={styles.modalView}>
-                    {assetType === "" ? (
+
+                    {assetType === "" && (
                       <>
                         <Text style={styles.modalText} className="text-lg">
                           Select asset type
                         </Text>
+
                         <View className="flex-row items-center mt-4">
-                          <TouchableOpacity onPress={() => setAssetType("Crypto")}>
+                          <TouchableOpacity
+                            onPress={() => {
+                              setAssetType("Crypto");
+                            }}
+                          >
                             <View className="border-[1px] rounded-[12px] px-12 py-12 justify-center border-white mx-2">
-                              <Text className="text-white text-md">
-                                Crypto
-                              </Text>
+                              <Text className="text-white text-md">Crypto</Text>
                             </View>
                           </TouchableOpacity>
-                          <TouchableOpacity onPress={() => setAssetType("Stock")}>
+
+                          <TouchableOpacity
+                            onPress={() => {
+                              setAssetType("Stock");
+                            }}
+                          >
                             <View className="border-[1px] rounded-[12px] px-12 py-12 border-white mx-2">
-                              <Text className="text-white text-md">
-                                Stock
-                              </Text>
+                              <Text className="text-white text-md">Stock</Text>
                             </View>
                           </TouchableOpacity>
                         </View>
-                        <TouchableOpacity 
-                          className='p-4 bg-red-900 mt-8 rounded-[12px]' 
-                          onPress={() => {
-                            setModalVisible(false);
-                          }}
+
+                        <TouchableOpacity
+                          className="p-4 bg-red-900 mt-8 rounded-[12px]"
+                          onPress={handleCancel}
                         >
                           <Text className="text-white">Cancel</Text>
                         </TouchableOpacity>
                       </>
-                    ) : (
+                    )}
+
+                    {assetType === "Crypto" && cryptoEntryMethod === "" && (
                       <>
                         <Text style={styles.modalText}>
-                          {assetType === "Crypto" ? "Select a coin from below..." : "Select a stock from below..."}
+                          How would you like to add your crypto?
+                        </Text>
+                        <View className="flex-row items-center mt-4">
+                          <TouchableOpacity
+                            onPress={() => setCryptoEntryMethod("manual")}
+                          >
+                            <View className="border-[1px] rounded-[12px] px-12 py-12 justify-center border-white mx-2">
+                              <Text className="text-white text-md">Manually</Text>
+                            </View>
+                          </TouchableOpacity>
+
+                          <TouchableOpacity
+                              onPress={() => {
+                                if (permission) {
+                                  navigation.navigate("Scanner");
+                                } else {
+                                  requestPermission();
+                                }
+                              }}
+                            >
+                          <View className="border-[1px] rounded-[12px] px-12 py-12 border-white mx-2">
+                            <Text className="text-white text-md">Scan</Text>
+                          </View>
+                        </TouchableOpacity>
+                        </View>
+                        <TouchableOpacity
+                          className="p-4 bg-red-900 mt-8 rounded-[12px]"
+                          onPress={handleCancel}
+                        >
+                          <Text className="text-white">Cancel</Text>
+                        </TouchableOpacity>
+                      </>
+                    )}
+
+                    {assetType === "Crypto" && cryptoEntryMethod === "manual" && (
+                      <>
+                        <Text style={styles.modalText}>
+                          Select a coin from below...
                         </Text>
                         <Dropdown
                           style={styles.dropdown}
@@ -115,43 +165,81 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
                           inputSearchStyle={styles.inputSearchStyle}
                           containerStyle={styles.dropdownList}
                           placeholder="Select..."
-                          data={assetType === "Crypto" ? coinData : stockData}
+                          data={coinData}
                           search
                           maxHeight={300}
                           value={selectedValue}
                           onChange={(item) => {
                             setModalVisible(false);
-                            navigation.navigate("AddToPortfolio", { selectedValue: item });
+                            setAssetType("");
+                            setCryptoEntryMethod("");
+                            navigation.navigate("AddToPortfolio", {
+                              selectedValue: item,
+                            });
                           }}
-                          renderItem={(item: any) => {
-                            if (assetType === "Crypto") {
-                              return (
-                                <View style={styles.itemContainer}>
-                                  <Image source={{ uri: item.image }} style={styles.itemImage} />
-                                  <Text style={styles.itemText}>{item.label.toUpperCase()}</Text>
-                                </View>
-                              );
-                            } else {
-                              return (
-                                <View style={styles.itemContainer}>
-                                  <Text style={styles.itemText}>
-                                    {item.ticker}
-                                  </Text>
-                                </View>
-                              );
-                            }
-                          }}
+                          renderItem={(item: any) => (
+                            <View style={styles.itemContainer}>
+                              <Image
+                                source={{ uri: item.image }}
+                                style={styles.itemImage}
+                              />
+                              <Text style={styles.itemText}>
+                                {item.label.toUpperCase()}
+                              </Text>
+                            </View>
+                          )}
                           labelField="label"
                           valueField="label"
                         />
-                        <TouchableOpacity 
-                          className='p-4 bg-red-500 mt-4 rounded-[12px]' 
+                        <TouchableOpacity
+                          className="p-4 bg-red-500 mt-4 rounded-[12px]"
                           onPress={() => {
                             setModalVisible(false);
                             setTimeout(() => {
                               setAssetType("");
+                              setCryptoEntryMethod("");
                             }, 500);
                           }}
+                        >
+                          <Text className="text-white">Cancel</Text>
+                        </TouchableOpacity>
+                      </>
+                    )}
+
+                    {assetType === "Stock" && (
+                      <>
+                        <Text style={styles.modalText}>
+                          Select a stock from below...
+                        </Text>
+                        <Dropdown
+                          style={styles.dropdown}
+                          placeholderStyle={styles.placeholderStyle}
+                          selectedTextStyle={styles.selectedTextStyle}
+                          inputSearchStyle={styles.inputSearchStyle}
+                          containerStyle={styles.dropdownList}
+                          placeholder="Select..."
+                          data={stockData}
+                          search
+                          maxHeight={300}
+                          value={selectedValue}
+                          onChange={(item) => {
+                            setModalVisible(false);
+                            setAssetType("");
+                            navigation.navigate("AddToPortfolio", {
+                              selectedValue: item,
+                            });
+                          }}
+                          renderItem={(item: any) => (
+                            <View style={styles.itemContainer}>
+                              <Text style={styles.itemText}>{item.ticker}</Text>
+                            </View>
+                          )}
+                          labelField="label"
+                          valueField="label"
+                        />
+                        <TouchableOpacity
+                          className="p-4 bg-red-500 mt-4 rounded-[12px]"
+                          onPress={handleCancel}
                         >
                           <Text className="text-white">Cancel</Text>
                         </TouchableOpacity>

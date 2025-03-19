@@ -5,6 +5,7 @@ import PortfolioScreen from 'screens/Portfolio';
 import AddToPortfolioScreen from 'screens/AddToPortfolio';
 import SettingsScreen from 'screens/Settings';
 import AssetInfoScreen from 'screens/AssetInfoScreen';
+import ScannerScreen from 'screens/Scanner';
 
 const Stack = createStackNavigator();
 
@@ -17,6 +18,7 @@ export default function App() {
           <Stack.Screen name="AddToPortfolio" options={{ animation: 'none' }} component={ AddToPortfolioScreen } />
           <Stack.Screen name="Settings" options={{ animation: 'none' }} component={ SettingsScreen } />
           <Stack.Screen name="AssetInfoScreen" options={{ animation: 'none' }} component={ AssetInfoScreen } />
+          <Stack.Screen name="Scanner" options={{animation: 'none'}} component={ ScannerScreen } />
          </Stack.Navigator>
       </NavigationContainer>
     </GestureHandlerRootView>

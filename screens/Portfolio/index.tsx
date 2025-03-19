@@ -6,6 +6,7 @@ import { Navbar } from '../../components/Navbar';
 import { TotalValue } from '../../components/TotalValue';
 import { PortfolioItem } from '../../components/PortfolioItem'
 import { ItemData } from 'types';
+import { Camera, CameraType } from "expo-camera"
 import { COINGECKO_API_KEY, POLYGON_IO_API_KEY } from "@env";
 import { db } from "../../database"
 import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
@@ -30,6 +31,7 @@ export default function PortfolioScreen() {
   const [stockHoldings, setStockHoldings] = useState([]);
   const [stockPrices, setStockPrices] = useState({});
   const [stockTotalValue, setStockTotalValue] = useState();
+
 
   useEffect(() => {
     const initDB = async () => {
