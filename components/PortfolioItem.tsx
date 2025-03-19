@@ -12,10 +12,10 @@ export const PortfolioItem: React.FC<Props> = ({ data }) => {
 
     let totalAmount;
 
-    if (String(data.amount * data.priceUsd).length > 6) {
-        totalAmount = data.amount * data.priceUsd
+    if (String(data.quantity * data.priceUsd).length > 6) {
+        totalAmount = data.quantity * data.priceUsd
       } else {
-        totalAmount = data.amount * data.priceUsd
+        totalAmount = data.quantity * data.priceUsd
       }
 
     return (
@@ -25,7 +25,7 @@ export const PortfolioItem: React.FC<Props> = ({ data }) => {
                     <Image className="h-10 w-10 rounded-full" source={{uri: data.icon}}></Image>
                     <View className="flex-col ml-[3vw]">
                         <Text className="text-white text-xl font-bold">{(data.symbol).toUpperCase()}</Text>
-                        <Text className="text-white text-sm">{data.amount.toLocaleString()} | ${data.priceUsd?.toLocaleString()}</Text> 
+                        <Text className="text-white text-sm">{data.quantity ? data.quantity.toLocaleString() : ""} | ${data.priceUsd?.toLocaleString()}</Text> 
                     </View>
                 </View>
                 <View className="flex-row items-center justify-end flex-1 mr-[2vw]">

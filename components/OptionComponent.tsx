@@ -108,9 +108,9 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
                                     setModalOpen(false)
                                     if (data.option == "Remove") {
                                         let statement = `
-                                            DELETE FROM test
-                                            WHERE id = '${data.id}';
-                                        `
+                                            DELETE FROM assets
+                                            WHERE asset_id = '${data.id}';
+                                            `;
                                         await setModalOpen(false)
                                         await db.execAsync(statement)
                                         navigation.navigate("Portfolio")

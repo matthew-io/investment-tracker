@@ -1,5 +1,5 @@
 import { View, TextStyle, Text, TouchableOpacity, Modal, StyleSheet, Alert, Image, Pressable, Touchable, TouchableWithoutFeedback } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { HomeIcon } from "./HomeIcon";
 import Ionicons from "@expo/vector-icons/Entypo";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -13,36 +13,43 @@ type Props = {
   stock?: any,
 }
 
-let coinData: any[];
-let stockData: any[];
-
 export const Navbar: React.FC<Props> = ({ coin, stock }) => {
-  if (coin) {
-    coinData = coin.map((item: any) => ({
-      label: item.symbol,
-      value: item.id,
-      image: item.image,
-      priceUsd: item.current_price,
-    }));  
-  if (stock) {
-
-      stockData = stock.map((item: any) => (
-      {
-        ticker: item.T,
-        close: item.c,
-      }));
-  }
-
-}
- 
   const route = useRoute();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedValue, setSelectedValue] = useState<number | null>(null);
   const [assetType, setAssetType] = useState("");
   const navigation = useNavigation();
+  const [coinData, setCoinData] = useState<any[]>([]);
+  const [stockData, setStockData] = useState<any[]>([]);
+  
+  // Process coin and stock data safely using useEffect
+  useEffect(() => {
+    // Only process coin data if it exists and is an array
+    if (coin && Array.isArray(coin)) {
+      const processedCoinData = coin.map((item: any) => ({
+        label: item.symbol,
+        value: item.id,
+        image: item.image,
+        priceUsd: item.current_price,
+      }));
+      setCoinData(processedCoinData);
+    }
+    
+    // Only process stock data if it exists and is an array
+    if (stock && Array.isArray(stock)) {
+      const processedStockData = stock.map((item: any) => ({
+        label: item.T, // Adding label field for dropdown
+        ticker: item.T,
+        close: item.c,
+      }));
+      setStockData(processedStockData);
+    }
+  }, [coin, stock]);
+
   const handleModal = () => {
-    setModalVisible(true)
-  }
+    setModalVisible(true);
+  };
+
   return (
     <View className="absolute bottom-0 left-0 right-0 h-24 bg-brand-gray flex-row items-center justify-around border-t border-[#1c1c1c]">
       <TouchableOpacity onPress={() => navigation.navigate("Portfolio")}>
@@ -54,22 +61,24 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
           className="absolute -top-8 left-1/2 w-16 h-16 rounded-full bg-brand-gray items-center justify-center"
           style={{ transform: [{ translateX: -32 }] }}
         >
-          <TouchableOpacity onPress={() => handleModal()}>
+          <TouchableOpacity onPress={handleModal}>
             <Modal
               animationType="fade"
-              transparent={ true }
-              visible={ modalVisible }
+              transparent={true}
+              visible={modalVisible}
               onRequestClose={() => {
-                setModalVisible( !modalVisible );
+                setModalVisible(!modalVisible);
               }}
             >
               <BlurView intensity={5} style={styles.blurBackground}>
                 <View style={styles.centeredView}>
                   <View style={styles.modalView}>
-                    {assetType == "" ? (
-                      <><Text style={styles.modalText} className="text-lg">
-                        Select asset type
-                      </Text><View className="flex-row items-center mt-4">
+                    {assetType === "" ? (
+                      <>
+                        <Text style={styles.modalText} className="text-lg">
+                          Select asset type
+                        </Text>
+                        <View className="flex-row items-center mt-4">
                           <TouchableOpacity onPress={() => setAssetType("Crypto")}>
                             <View className="border-[1px] rounded-[12px] px-12 py-12 justify-center border-white mx-2">
                               <Text className="text-white text-md">
@@ -84,37 +93,36 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
                               </Text>
                             </View>
                           </TouchableOpacity>
-                          
                         </View>
-                        <TouchableOpacity className='p-4 bg-red-500 mt-8 rounded-[12px]' onPress={() => {
-                            setModalVisible(false)
-                          }}>
-                            <Text className="text-white">Cancel</Text>
-                          </TouchableOpacity>
-                        </>
-                        
-                    )
-                  :
-                  (
-                        <>
+                        <TouchableOpacity 
+                          className='p-4 bg-red-900 mt-8 rounded-[12px]' 
+                          onPress={() => {
+                            setModalVisible(false);
+                          }}
+                        >
+                          <Text className="text-white">Cancel</Text>
+                        </TouchableOpacity>
+                      </>
+                    ) : (
+                      <>
                         <Text style={styles.modalText}>
-                            {assetType == "Crypto" ? "Select a coin from below..." : "Select a stock from below..."}
-                          </Text>
-                          <Dropdown
+                          {assetType === "Crypto" ? "Select a coin from below..." : "Select a stock from below..."}
+                        </Text>
+                        <Dropdown
                           style={styles.dropdown}
                           placeholderStyle={styles.placeholderStyle}
                           selectedTextStyle={styles.selectedTextStyle}
                           inputSearchStyle={styles.inputSearchStyle}
                           containerStyle={styles.dropdownList}
                           placeholder="Select..."
-                          data={assetType == "Crypto" ? coinData : stockData}
+                          data={assetType === "Crypto" ? coinData : stockData}
                           search
                           maxHeight={300}
                           value={selectedValue}
                           onChange={(item) => {
                             setModalVisible(false);
                             navigation.navigate("AddToPortfolio", { selectedValue: item });
-                          } }
+                          }}
                           renderItem={(item: any) => {
                             if (assetType === "Crypto") {
                               return (
@@ -126,8 +134,6 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
                             } else {
                               return (
                                 <View style={styles.itemContainer}>
-                                  {/* sends wayyyy too many requests. need to find alternative */}
-                                  {/* <SvgUri uri={`https://assets.parqet.com/logos/symbol/${item.ticker}`} style={styles.itemImage} /> */}
                                   <Text style={styles.itemText}>
                                     {item.ticker}
                                   </Text>
@@ -135,20 +141,22 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
                               );
                             }
                           }}
-
-                          labelField={"label"}
-                          valueField={"label"} />
-                          <TouchableOpacity className='p-4 bg-red-500 mt-4 rounded-[12px]' onPress={() => {
-                            setModalVisible(false)
+                          labelField="label"
+                          valueField="label"
+                        />
+                        <TouchableOpacity 
+                          className='p-4 bg-red-500 mt-4 rounded-[12px]' 
+                          onPress={() => {
+                            setModalVisible(false);
                             setTimeout(() => {
-                              setAssetType("")  
-                            }, 500)
-                          }}>
-                            <Text className="text-white">Cancel</Text>
-                        </TouchableOpacity></>
-                  )}
-                    
-                    
+                              setAssetType("");
+                            }, 500);
+                          }}
+                        >
+                          <Text className="text-white">Cancel</Text>
+                        </TouchableOpacity>
+                      </>
+                    )}
                   </View>
                 </View>
               </BlurView>
@@ -164,6 +172,7 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   blurBackground: {

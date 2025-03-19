@@ -36,31 +36,33 @@ export default function AddToPortfolioScreen() {
 
     const options = [
         {
-            header: "Buy Price (USD)",
-            description: `Enter the amount purchased in USD`,
-            option: "EnterText",
-            onChangeText: handleBuyPriceChange
+          header: "Buy Price (USD)",
+          description: `Enter the amount purchased in USD`,
+          option: "EnterText",
+          onChangeText: handleBuyPriceChange
         },
         {
-            header: `Amount Bought ${selectedValue.ticker})`,
-            description: `Enter the total amount bought in `,
-            option: "EnterText",
-            onChangeText: handleAmountBoughtChange
+          header: `Amount Bought (${
+            selectedValue.ticker ? selectedValue.ticker.toUpperCase() : selectedValue.label.toUpperCase()
+          })`,
+          description: "Enter the total amount bought",
+          option: "EnterText",
+          onChangeText: handleAmountBoughtChange
         },
         {
-            header: "Date Purchased",
-            description: "Select the date that the purchase was made on.",
-            option: "EnterDate",
-            onChangeDate: handleBuyDateChange
+          header: "Date Purchased",
+          description: "Select the date that the purchase was made on.",
+          option: "EnterDate",
+          onChangeDate: handleBuyDateChange
         },
-        // implementation todo
         {
-            header: "Notes",
-            description: "Add informational notes to your transaction.",
-            option: "Enable",
-            onChangeNotesText: handleNotesTextChange
+          header: "Notes",
+          description: "Add informational notes to your transaction.",
+          option: "Enable",
+          onChangeNotesText: handleNotesTextChange
         }
-    ]
+      ];
+      
 
     return (
         <View className="bg-brand-gray h-full">
@@ -71,9 +73,9 @@ export default function AddToPortfolioScreen() {
                 })}
             </ScrollView>
             {selectedValue.ticker ? (
-                <AddToPortfolioConfirm data={{id: selectedValue._index, symbol: selectedValue.ticker, date: buyDate, notes: notes, amount: parseFloat(amountBought)}}/>
+                <AddToPortfolioConfirm data={{id: selectedValue._index, symbol: selectedValue.ticker, date: buyDate, notes: notes, amount: parseFloat(amountBought), type: "stock"}}/>
             ) : (
-                <AddToPortfolioConfirm data={{id: selectedValue.value, symbol: selectedValue.label, date: buyDate, notes: notes, amount: parseFloat(amountBought)}}/>
+                <AddToPortfolioConfirm data={{id: selectedValue.value, symbol: selectedValue.label, date: buyDate, notes: notes, amount: parseFloat(amountBought), type: "crypto"}}/>
             )}
            
             <Navbar />

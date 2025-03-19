@@ -11,7 +11,7 @@ export default function AssetInfoScreen() {
     const assetData = route.params?.data
 
     const [note, setNote] = useState(assetData.note);
-    const [amount, setAmount] = useState(assetData.amount.toString())
+    const [amount, setAmount] = useState(assetData.amount ? assetData.amount.toString() : "")
 
     const assetOptions = [
         {
