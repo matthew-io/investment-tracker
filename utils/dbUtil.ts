@@ -2,6 +2,8 @@ import { db } from "../database"
 
 export const setupDatabase = async () => {
     try {
+        await db.execAsync("PRAGMA foreign_keys = ON;");
+
         await db.execAsync(`
             CREATE TABLE IF NOT EXISTS assets (
                 asset_id TEXT PRIMARY KEY NOT NULL,
@@ -10,7 +12,8 @@ export const setupDatabase = async () => {
                 name TEXT,
                 UNIQUE(symbol, type)
             );
-        `)
+        `);
+
         await db.execAsync(`
             CREATE TABLE IF NOT EXISTS transactions (
                 tx_id TEXT PRIMARY KEY NOT NULL,
@@ -19,15 +22,15 @@ export const setupDatabase = async () => {
                 price REAL,
                 date TEXT,
                 note TEXT,
-                FOREIGN KEY (asset_id) REFERENCES assets (asset_id)
-            );`
-        )
+                FOREIGN KEY (asset_id) REFERENCES assets (asset_id) ON DELETE CASCADE
+            );
+        `);
 
-    console.log("Setting up database complete")
+        console.log("Setting up database complete");
     } catch (error) {
-        console.error("Couldn't setup database", error)
+        console.error("Couldn't setup database", error);
     }
-}
+};
 
 export const insertAsset = async (asset_id: string, type: string, symbol: string, name: string) => {
     try {

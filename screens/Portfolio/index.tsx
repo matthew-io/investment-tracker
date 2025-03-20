@@ -19,6 +19,8 @@ export default function PortfolioScreen() {
   const route = useRoute();
   const newData = route.params?.data;
 
+  console.log("New data: ", newData)
+
   const { settings } = useContext(SettingsContext);
   const userCurrency = settings.currency;
 
@@ -35,6 +37,7 @@ export default function PortfolioScreen() {
   const [stockPrices, setStockPrices] = useState<Record<string, number>>({});
   const [stockTotalValue, setStockTotalValue] = useState<number | undefined>(undefined);
   const [conversionRates, setConversionRates] = useState<Record<string, number>>({});
+
 
   useEffect(() => {
     const fetchConversionRates = async () => {
@@ -115,6 +118,13 @@ export default function PortfolioScreen() {
           date: newData.date || new Date().toISOString(),
           note: newData.note ?? ""
         };
+
+        if (newData.mode === "update") {
+          await db.execAsync(`
+            DELETE FROM transactions
+            WHERE asset_id = '${newData.id}';
+          `);
+        }
 
         await insertTransactions(txToInsert);
         await fetchPersonalCoinData(); 
