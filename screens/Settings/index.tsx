@@ -11,17 +11,19 @@ export default function SettingsScreen() {
         {
             header: "Currency",
             description: "Set the default currency, all transactional and financial data will be displayed in your chosen currency.",
-            option: "Enable"
+            option: "changeCurrency"
         },
         {
             header: "Enable face ID",
             description: "Lock your portfolio data behind face ID. You'll be asked to provide your face ID every time you open the app.",
-            option: "Enable"
+            option: "Enable",
+            type: "toggle"
         },
         {
             header: "Enable AI Portfolio Summaries",
             description: "Enabling AI portfolio summaries to give a more detailed analysis of the recent state of your portfolio.",
-            option: "Enable"
+            option: "Enable",
+            type: "toggle"
         },
         {
             header: "Summary Frequency",
@@ -31,7 +33,8 @@ export default function SettingsScreen() {
         {
             header: "Export Portfolio Data",
             description: "Export your portfolio data in JSON format.",
-            option: "Enable"
+            option: "Enable",
+
         }
     ]
     

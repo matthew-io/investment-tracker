@@ -6,6 +6,9 @@ export default function ScannerScreen() {
   return (
    <SafeAreaView style={{ flex: 1 }}>
     <CameraView 
+    onBarcodeScanned={(data) => {
+      console.log(data)
+    }}
     facing="back"
     style={{ flex: 1}}
 />

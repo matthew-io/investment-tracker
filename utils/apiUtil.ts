@@ -77,3 +77,18 @@ export const fetchPersonalCoinData = async () => {
       setLoading(false);
     }
   };
+
+
+export const getCurrencyData = async () => {
+    const url = 'https://api.fxratesapi.com/latest'
+    const options = {
+        method:'GET'
+    }
+
+    const response = await fetch(url, options);
+    const data = await response.json();
+
+    console.log("Currency data: ", data)
+
+    
+}
