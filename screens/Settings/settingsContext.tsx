@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface Settings {
   currency: string;
-  enableFaceId: boolean;
+  faceIdEnabled: boolean;
   enableAISummaries: boolean;
   summaryFrequency: string;
 }
@@ -17,7 +17,7 @@ interface SettingsContextType {
 
 const defaultSettings: Settings = {
   currency: 'USD',
-  enableFaceId: false,
+  faceIdEnabled: false,
   enableAISummaries: false,
   summaryFrequency: 'weekly',
 };

@@ -9,7 +9,6 @@ type Props = {
 
 export const AddToPortfolioConfirm = ({ data }) => {
     const navigation = useNavigation();
-
     return (
         <View className="justify-end flex-1">
             <View className="mb-24 h-16 bg-brand-gray flex-row items-center justify-around border-t border-[#1c1c1c]">

@@ -2,10 +2,16 @@ import { Navbar } from "components/Navbar"
 import { OptionComponent } from "components/OptionComponent"
 import { ScreenHeader } from "components/ScreenHeader"
 import { TotalValue } from "components/TotalValue"
+import { useContext } from "react";
 import { Text, View, ScrollView, ActivityIndicator } from "react-native";
 import { SettingsItem } from "types"
+import { SettingsContext } from "./settingsContext";
 
 export default function SettingsScreen() {
+    const { settings, saveSettings } = useContext(SettingsContext)
+
+    console.log("YOOO", settings.faceIdEnabled)
+
     const settingsItems: SettingsItem[] = 
     [
         {
@@ -14,9 +20,9 @@ export default function SettingsScreen() {
             option: "changeCurrency"
         },
         {
-            header: "Enable face ID",
+            header: `${settings.faceIdEnabled ? 'Disable Face ID' : 'Enable Face ID'}`,
             description: "Lock your portfolio data behind face ID. You'll be asked to provide your face ID every time you open the app.",
-            option: "Enable",
+            option: "enableFaceId",
             type: "toggle"
         },
         {

@@ -10,6 +10,7 @@ import ScannerScreen from "screens/Scanner";
 // Import your provider
 import { SettingsProvider } from "./screens/Settings/settingsContext";
 import WalletDetailScreen from "screens/AddToPortfolioWallet";
+import EntryScreen from "screens/EntryScreen";
 
 const Stack = createStackNavigator();
 
@@ -19,6 +20,11 @@ export default function App() {
       <SettingsProvider>
         <NavigationContainer>
           <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen
+              name="Entry"
+              options={{ animation: "none" }}
+              component={EntryScreen}
+            />
             <Stack.Screen
               name="Portfolio"
               options={{ animation: "none" }}

@@ -1,9 +1,8 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, Text, TouchableOpacity, Modal, ActivityIndicator, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, ActivityIndicator, ScrollView, TextInput } from 'react-native';
 import { SettingsItem } from "../types";
 import { BlurView } from "expo-blur"; 
 import Ionicons from "@expo/vector-icons/Entypo";
-import { TextInput } from 'react-native';
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useNavigation } from '@react-navigation/native';
 import { db } from "../database";
@@ -27,11 +26,13 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
 
     useEffect(() => {
         setNotesText(data.noteValue && data.noteValue !== "undefined" ? data.noteValue : "");
-        setModalText(data.option === "changeCurrency" ? "Select a currency from below..." : "");
+        if(data.option === "changeCurrency") {
+            setModalText("Select a currency from below...");
+        }
     }, [data.noteValue, data.option]);
 
     useEffect(() => {
-        if (data.option === "Enable" || data.option === "Remove" || data.option === "changeCurrency") {
+        if (data.option === "Enable" || data.option === "Remove" || data.option === "changeCurrency" || data.option === "enableFaceId") {
             setHasButton(true);
         } else {
             setHasButton(false);
@@ -61,7 +62,7 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
               value={data.textValue}
             />
         );
-    } else if (data.option === "Enable" || data.option === "Remove" || data.option === "changeCurrency") {
+    } else if (data.option === "Enable" || data.option === "Remove" || data.option === "changeCurrency" || data.option === "enableFaceId") {
         rightComponent = <Ionicons name="chevron-right" color="white" size={24} />;
     } else if (data.option === "EnterDate") {
         rightComponent = (
@@ -96,6 +97,15 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
             const newSettings = { ...settings, currency: selectedCurrency };
             await saveSettings(newSettings);
         }
+        if (data.option === "enableFaceId") {
+            if (settings.faceIdEnabled) {
+                const newSettings = { ...settings, faceIdEnabled: false };
+                await saveSettings(newSettings);
+            } else {
+                const newSettings = { ...settings, faceIdEnabled: true };
+                await saveSettings(newSettings);
+            }
+        }
     };
 
     const renderModalContent = () => {
@@ -128,6 +138,12 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
                         </ScrollView>
                     )}
                 </>
+            );
+        } else if (data.option === "enableFaceId") {
+            return (
+                <Text style={styles.modalText}>
+                    {settings.faceIdEnabled ? "Confirm disabling FaceID" : "Confirm enabling FaceID"}
+                </Text>
             );
         } else if (data.option !== "Remove") {
             return (
@@ -235,4 +251,4 @@ const styles = {
         color: 'white',
         textAlign: 'center',
     },
-}
+};

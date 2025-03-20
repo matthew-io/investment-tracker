@@ -15,6 +15,12 @@
         {
           "cameraPermission": "Allow Zenith to access your camera."
         }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow Zenith to use Face ID."
+        }
       ]
     ],
     "orientation": "portrait",
