@@ -21,7 +21,8 @@
         {
           "faceIDPermission": "Allow Zenith to use Face ID."
         }
-      ]
+      ],
+      "expo-barcode-scanner"
     ],
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -36,7 +37,10 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.myexpoapp"
+      "bundleIdentifier": "com.anonymous.myexpoapp",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "Allow Zenith to use Face ID."
+      }
     },
     "android": {
       "adaptiveIcon": {

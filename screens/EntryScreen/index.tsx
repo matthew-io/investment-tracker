@@ -8,25 +8,34 @@ export default function EntryScreen() {
   const navigation = useNavigation();
   const { settings } = useContext(SettingsContext);
 
-  const handleEnter = async () => {
-    console.log("22222", settings.faceIdEnabled)
-    // If FaceID is enabled in settings, prompt for authentication.
-    if (settings.faceIdEnabled) {
-      const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: "Authenticate with Face ID",
-        fallbackLabel: "Enter Passcode",
-      });
-      if (result.success) {
-        navigation.navigate("Portfolio");
-      } else {
-        Alert.alert("Authentication failed", "Face ID authentication was not successful.");
-      }
-    } else {
-      // If FaceID is not enabled, proceed directly.
-      navigation.navigate("Portfolio");
-    }
-  };
+ const checkBiometricAvailability = async () => {
+  const hasHardware = await LocalAuthentication.hasHardwareAsync();
+  const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+  console.log("hasHardware:", hasHardware, "isEnrolled:", isEnrolled);
+  return hasHardware && isEnrolled;
+};
 
+const handleEnter = async () => {
+  console.log("handleEnter triggered");
+  if (settings.faceIdEnabled && await checkBiometricAvailability()) {
+    console.log("Biometric available, prompting authentication");
+    const result = await LocalAuthentication.authenticateAsync({
+      promptMessage: "Authenticate with Face ID",
+      fallbackLabel: "Enter Passcode",
+    });
+    console.log("Authentication result:", result);
+    if (result.success) {
+      navigation.navigate("Portfolio");
+    } else {
+      Alert.alert("Authentication failed", "Face ID authentication was not successful.");
+    }
+  } else {
+    console.log("Biometric not enabled or not available, navigating directly");
+    navigation.navigate("Portfolio");
+  }
+};
+
+  
   return (
     <View className="bg-brand-gray h-full justify-center items-center">
       <Text className="text-white text-6xl font-bold">zenith</Text>
