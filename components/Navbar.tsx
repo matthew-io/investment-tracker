@@ -1,5 +1,5 @@
 import { View, TextStyle, Text, TouchableOpacity, Modal, StyleSheet, Alert, Image, Pressable, Touchable, TouchableWithoutFeedback } from "react-native";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { HomeIcon } from "./HomeIcon";
 import Ionicons from "@expo/vector-icons/Entypo";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -8,6 +8,7 @@ import { BlurView } from "expo-blur";
 import { Dropdown } from "react-native-element-dropdown";
 import { SvgUri } from "react-native-svg";
 import { useCameraPermissions } from "expo-camera";
+import { SettingsContext } from "screens/Settings/settingsContext";
 
 type Props = {
   coin?: any,
@@ -23,9 +24,13 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
   const [coinData, setCoinData] = useState<any[]>([]);
   const [stockData, setStockData] = useState<any[]>([]);
   const [cryptoEntryMethod, setCryptoEntryMethod] = useState<"" | "manual" | "qr">("");
+  const { settings, saveSettings } = useContext(SettingsContext);
 
   const [permission, requestPermission] = useCameraPermissions();
   
+  const textColor = settings.darkMode ? "text-white" : "text-black"
+  const bgColor = settings.darkMode ? "bg-brand-gray" : "bg-brand-white"
+
   useEffect(() => {
     if (coin && Array.isArray(coin)) {
       const processedCoinData = coin.map((item: any) => ({
@@ -58,14 +63,14 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
   };
 
   return (
-    <View className="absolute bottom-0 left-0 right-0 h-24 bg-brand-gray flex-row items-center justify-around border-t border-[#1c1c1c]">
+    <View className={`absolute bottom-0 left-0 right-0 h-24 ${bgColor} flex-row items-center justify-around border-t border-[#1c1c1c]`}>
       <TouchableOpacity onPress={() => navigation.navigate("Portfolio")}>
-        <Ionicons name="home" color="white" size={42} />
+        <Ionicons name="home" color={`${settings.darkMode ? "white" : "black"}`} size={42} />
       </TouchableOpacity>
 
       {route.name === "Portfolio" && (
         <View
-          className="absolute -top-8 left-1/2 w-16 h-16 rounded-full bg-brand-gray items-center justify-center"
+          className={`absolute -top-8 left-1/2 w-16 h-16 rounded-full ${bgColor} items-center justify-center`}
           style={{ transform: [{ translateX: -32 }] }}
         >
           <TouchableOpacity onPress={handleModal}>
@@ -77,11 +82,11 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
             >
               <BlurView intensity={5} style={styles.blurBackground}>
                 <View style={styles.centeredView}>
-                  <View style={styles.modalView}>
+                  <View style={styles.modalView} className={`${settings.darkMode ? "bg-[#2c2c2c]" : "bg-brand-white"}`}> 
 
                     {assetType === "" && (
                       <>
-                        <Text style={styles.modalText} className="text-lg">
+                        <Text style={styles.modalText} className={`${textColor} text-lg`}>
                           Select asset type
                         </Text>
 
@@ -92,7 +97,7 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
                             }}
                           >
                             <View className="border-[1px] rounded-[12px] px-12 py-12 justify-center border-white mx-2">
-                              <Text className="text-white text-md">Crypto</Text>
+                              <Text className={`${textColor} text-md`}>Crypto</Text>
                             </View>
                           </TouchableOpacity>
 
@@ -102,7 +107,7 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
                             }}
                           >
                             <View className="border-[1px] rounded-[12px] px-12 py-12 border-white mx-2">
-                              <Text className="text-white text-md">Stock</Text>
+                              <Text className={`${textColor} text-md`}>Stock</Text>
                             </View>
                           </TouchableOpacity>
                         </View>
@@ -126,7 +131,7 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
                             onPress={() => setCryptoEntryMethod("manual")}
                           >
                             <View className="border-[1px] rounded-[12px] px-12 py-12 justify-center border-white mx-2">
-                              <Text className="text-white text-md">Manually</Text>
+                              <Text className={`${textColor} text-md`}>Manually</Text>
                             </View>
                           </TouchableOpacity>
 
@@ -140,7 +145,7 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
                               }}
                             >
                           <View className="border-[1px] rounded-[12px] px-12 py-12 border-white mx-2">
-                            <Text className="text-white text-md">Scan</Text>
+                            <Text className={`${textColor} text-md`}>Scan</Text>
                           </View>
                         </TouchableOpacity>
                         </View>
@@ -160,7 +165,7 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
                         </Text>
                         <Dropdown
                           style={styles.dropdown}
-                          placeholderStyle={styles.placeholderStyle}
+                          placeholderStyle={[styles.placeholderStyle, { backgroundColor: bgColor }]}
                           selectedTextStyle={styles.selectedTextStyle}
                           inputSearchStyle={styles.inputSearchStyle}
                           containerStyle={styles.dropdownList}
@@ -178,7 +183,7 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
                             });
                           }}
                           renderItem={(item: any) => (
-                            <View style={styles.itemContainer}>
+                            <View style={[styles.itemContainer, {backgroundColor: bgColor}]}>
                               <Image
                                 source={{ uri: item.image }}
                                 style={styles.itemImage}
@@ -212,31 +217,35 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
                           Select a stock from below...
                         </Text>
                         <Dropdown
-                          style={styles.dropdown}
-                          placeholderStyle={styles.placeholderStyle}
-                          selectedTextStyle={styles.selectedTextStyle}
-                          inputSearchStyle={styles.inputSearchStyle}
-                          containerStyle={styles.dropdownList}
-                          placeholder="Select..."
-                          data={stockData}
-                          search
-                          maxHeight={300}
-                          value={selectedValue}
-                          onChange={(item) => {
-                            setModalVisible(false);
-                            setAssetType("");
-                            navigation.navigate("AddToPortfolio", {
-                              selectedValue: item,
-                            });
-                          }}
-                          renderItem={(item: any) => (
-                            <View style={styles.itemContainer}>
-                              <Text style={styles.itemText}>{item.ticker}</Text>
-                            </View>
-                          )}
-                          labelField="label"
-                          valueField="label"
-                        />
+                                style={[styles.dropdown, { backgroundColor: bgColor }]}
+                                placeholderStyle={[styles.placeholderStyle, { color: textColor }]}
+                                selectedTextStyle={[styles.selectedTextStyle, { color: textColor }]}
+                                inputSearchStyle={[styles.inputSearchStyle, { color: textColor }]}
+                                containerStyle={[styles.dropdownList, { backgroundColor: bgColor }]}
+                                placeholder="Select..."
+                                data={coinData}
+                                search
+                                maxHeight={300}
+                                value={selectedValue}
+                                onChange={(item) => {
+                                  setModalVisible(false);
+                                  setAssetType("");
+                                  setCryptoEntryMethod("");
+                                  navigation.navigate("AddToPortfolio", {
+                                    selectedValue: item,
+                                  });
+                                }}
+                                renderItem={(item: any) => (
+                                  <View style={styles.itemContainer}>
+                                    <Image source={{ uri: item.image }} style={styles.itemImage} />
+                                    <Text style={[styles.itemText, { color: textColor }]}>
+                                      {item.label.toUpperCase()}
+                                    </Text>
+                                  </View>
+                                )}
+                                labelField="label"
+                                valueField="label"
+                              />
                         <TouchableOpacity
                           className="p-4 bg-red-500 mt-4 rounded-[12px]"
                           onPress={handleCancel}
@@ -249,13 +258,13 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
                 </View>
               </BlurView>
             </Modal>
-            <Ionicons name="circle-with-plus" color="white" size={60} />
+            <Ionicons name="circle-with-plus" color={settings.darkMode ? "white" : "black"} size={60} />
           </TouchableOpacity>
         </View>
       )}
 
       <TouchableOpacity onPress={() => navigation.navigate("Settings")}>
-        <Ionicons name="cog" color="white" size={42} />
+        <Ionicons name="cog" color={`${settings.darkMode ? "white" : "black"}`} size={42} />
       </TouchableOpacity>
     </View>
   );
@@ -285,7 +294,6 @@ const styles = StyleSheet.create({
   },
   modalView: {
     margin: 20,
-    backgroundColor: '#2C2C2C',
     borderColor: 'white',
     borderWidth: 0.5,
     borderRadius: 20,
@@ -309,17 +317,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#2196F3',
   },
   textStyle: {
-    color: 'white',
+    // color: 'white',
     fontWeight: 'bold',
     textAlign: 'center',
   },
   modalText: {
     marginBottom: 15,
-    color: 'white',
     textAlign: 'center',
   },
   placeholderStyle: {
-    color: 'white',
     fontSize: 16,
   },
   selectedTextStyle: {
@@ -331,7 +337,7 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 6,
     marginTop: 12,
-    color: 'white',
+    // color: 'white',
     fontSize: 16,
   },
   itemContainer: {
@@ -339,7 +345,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 10,
     color: '#2196F3',
-    backgroundColor: '#2C2C2C',
     borderColor: '#2196F3',
   },
   itemImage: {
@@ -349,11 +354,10 @@ const styles = StyleSheet.create({
   },
   itemText: {
     fontSize: 16,
-    color: 'white',
+    // color: 'white',
   },
   dropdownList: {
     marginTop: 6,
-    backgroundColor: '#2C2C2C',
     borderWidth: 0.5,
     borderColor: 'white',
     borderRadius: 8,

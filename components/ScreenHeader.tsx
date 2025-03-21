@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useContext } from "react";
 import { View, Text, Image, StyleSheet } from "react-native";
+import { SettingsContext } from "screens/Settings/settingsContext";
 
 type Props = {
   data: string;
@@ -7,9 +8,14 @@ type Props = {
 };
 
 export const ScreenHeader: React.FC<Props> = ({ data, image }) => {
+  const { settings, saveSettings } = useContext(SettingsContext)
+
+  const textColor = settings.darkMode ? "text-white" : "text-black"
+  const bgColor = settings.darkMode ? "bg-brand-gray" : "bg-brand-white"
+
   return (
       <View
-        className="flex-row h-[25vh] w-full items-center bg-brand-gray"
+        className={`flex-row h-[25vh] w-full items-center ${bgColor}`}
         style={{
           shadowColor: "#000",
           shadowOffset: { width: 0, height: 1 },
@@ -25,7 +31,7 @@ export const ScreenHeader: React.FC<Props> = ({ data, image }) => {
         />
       )}
     
-        <Text className="text-white ml-4 font-bold text-4xl mt-12">
+        <Text className={`${textColor} ml-4 font-bold text-4xl mt-12`}>
           {data}
         </Text>
     </View>

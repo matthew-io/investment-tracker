@@ -191,43 +191,69 @@ const currencySymbols: Record<string, string> = {
     ZMW: "ZK",     // Zambian kwacha
     ZWL: "$"       // Zimbabwean dollar
   };
-  
 
-export const PortfolioItem: React.FC<Props> = ({ data }) => {
+
+  export const PortfolioItem: React.FC<Props> = ({ data }) => {
     const navigation = useNavigation();
-    const { settings, saveSettings } = useContext(SettingsContext)
+    const { settings } = useContext(SettingsContext);
     const currencySymbol = currencySymbols[settings.currency] || "$";
 
-    let totalAmount;
-
-    if (String(data.quantity * data.priceUsd).length > 6) {
-        totalAmount = data.quantity * data.priceUsd
-      } else {
-        totalAmount = data.quantity * data.priceUsd
-      }
-
-    return (
-        <TouchableOpacity onPress={() => navigation.navigate("AssetInfoScreen", { data })}>
-            <View className="flex-row h-[10vh] w-full border-b border-[#1c1c1c]">  
-                <View className="flex-row items-center ml-[3vw]">
-                    <Image className="h-10 w-10 rounded-full" source={{uri: data.icon}}></Image>
-                    <View className="flex-col ml-[3vw]">
-                        <Text className="text-white text-xl font-bold">{(data.symbol).toUpperCase()}</Text>
-                        <Text className="text-white text-sm">{data.quantity ? data.quantity.toLocaleString() : ""} | {currencySymbol}{data.priceUsd?.toLocaleString()}</Text> 
-                    </View>
-                </View>
-                <View className="flex-row items-center justify-end flex-1 mr-[2vw]">
-                    <View className="flex-col ml-[1vw] items-end">
-                        <Text className="text-white text-right text-xl ml-[1vw] font-bold">  
-                            {currencySymbol}{totalAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}                         
-                        </Text>
-                        <Text className="text-green-500 ml-[1vw] text-sm">
-                            +6.66% from 24h ago
-                        </Text> 
-                    </View>
-                </View>
-            </View>
-        </TouchableOpacity>
-        
+    const textColor = settings.darkMode ? "text-white" : "text-black"
+    const bgColor = settings.darkMode ? "bg-brand-gray" : "bg-brand-gray"
+  
+    let change = 0;
+    if (data.high24h && data.high24h > 0) {
+      change = ((data.priceUsd / data.high24h) * 100) - 100;
+    }
+  
+    const formattedChange = change.toLocaleString(undefined, { 
+      maximumFractionDigits: 2,
+      minimumFractionDigits: 2 
+    });
+  
+    const changeComponent = (
+      <Text
+        className={`ml-[1vw] text-sm ${
+          change < 0 ? "text-red-500" : "text-green-500"
+        }`}
+      >
+        {`${formattedChange}% from 24h ago`}
+      </Text>
     );
-}
+  
+    const totalAmount = data.quantity * data.priceUsd;
+    const formattedTotal = totalAmount.toLocaleString(undefined, {
+      maximumFractionDigits: 3,
+      minimumFractionDigits: 2,
+    });
+  
+    const formattedPrice = data.priceUsd?.toLocaleString(undefined, {
+      maximumFractionDigits: 2,
+      minimumFractionDigits: 2,
+    });
+  
+    return (
+      <TouchableOpacity onPress={() => navigation.navigate("AssetInfoScreen", { data })}>
+        <View className={`flex-row h-[10vh] w-full border-b border-[${settings.darkMode ? "#1c1c1c" : "#e0dede"}]`}>  
+          <View className="flex-row items-center ml-[3vw]">
+            <Image className="h-10 w-10 rounded-full" source={{ uri: data.icon }} />
+            <View className="flex-col ml-[3vw]">
+              <Text className={`${textColor} text-xl font-bold`}>{data.symbol?.toUpperCase()}</Text>
+              <Text className={`${textColor} text-sm`}>
+                {data.quantity.toLocaleString()} | {currencySymbol}{formattedPrice}
+              </Text> 
+            </View>
+          </View>
+          <View className="flex-row items-center justify-end flex-1 mr-[2vw]">
+            <View className="flex-col ml-[1vw] items-end">
+              <Text className={`${textColor} text-right text-xl ml-[1vw] font-bold`}>
+                {currencySymbol}{formattedTotal}
+              </Text>
+              {changeComponent}
+            </View>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+  

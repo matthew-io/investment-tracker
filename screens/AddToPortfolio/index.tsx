@@ -18,7 +18,8 @@ export default function AddToPortfolioScreen() {
     const [amountBought, setAmountBought] = useState();
     const { selectedValue } = route.params as { selectedValue: any };
 
-    console.log("Selected value: ", selectedValue)
+    const textColor = settings.darkMode ? "text-white" : "text-black"
+    const bgColor = settings.darkMode ? "bg-brand-gray" : "bg-brand-white"
 
     const handleBuyPriceChange = (value: any) => {
         setBuyPrice(value);
@@ -67,7 +68,7 @@ export default function AddToPortfolioScreen() {
       
 
     return (
-        <View className="bg-brand-gray h-full">
+        <View className={`${bgColor} h-full`}>
             <ScreenHeader data={selectedValue.ticker ? `${selectedValue.ticker}/${settings.currency}` : `${selectedValue.label.toUpperCase()}/${settings.currency}`} image={selectedValue.image} />
             <ScrollView className="">
                 {options.map((option) => {

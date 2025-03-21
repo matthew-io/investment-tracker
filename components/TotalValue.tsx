@@ -1,14 +1,15 @@
-import { View, Text, Image } from "react-native"
+import { View, Text, Image, TouchableOpacity } from "react-native"
 import "../global.css"
 import { ItemData } from "types";
 import { SettingsContext } from "screens/Settings/settingsContext";
 import { useContext } from "react";
+import Ionicons from "@expo/vector-icons/Entypo";
 
 type Props = {
     data: number;
 }
 
-// this list of currency symbols was chatGPT generated: https://chatgpt.com/share/67dc1cab-684c-8005-8d7f-50c8d9994408
+// this list of currency symbols was AI generated: https://chatgpt.com/share/67dc1cab-684c-8005-8d7f-50c8d9994408
 
 const currencySymbols: Record<string, string> = {
   ADA: "₳",       // Cardano
@@ -198,8 +199,11 @@ export const TotalValue: React.FC<Props> = ( {data} ) => {
   const { settings, saveSettings } = useContext(SettingsContext);
   const currencySymbol = currencySymbols[settings.currency] || "$";
 
+  const textColor = settings.darkMode ? "text-white" : "text-black"
+  const bgColor = settings.darkMode ? "bg-brand-gray" : "bg-brand-white"
+
   return (
-    <View className="flex-row h-[25vh] w-full items-center bg-brand-gray justify-between"
+    <View className={`flex-row h-[25vh] w-full items-center ${bgColor} justify-between`}
     style={{
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 1 },
@@ -208,14 +212,23 @@ export const TotalValue: React.FC<Props> = ( {data} ) => {
       elevation: 5,
     }}>
       <View className="flex-col ml-[4vw] mt-[5vh]">
-        <Text className="text-white text-xl">Total Value</Text>
-        <Text className="text-white text-4xl font-bold">{currencySymbol}{data.toLocaleString()}</Text>
-        <Text className="text-green-400">+6.66% from 24h ago.</Text>            
+        <Text className={`${textColor} text-xl`}>Total Value</Text>
+        <Text className={`${textColor} text-4xl font-bold`}>{currencySymbol}{data.toLocaleString()}</Text>
+        <Text className="text-green-500">+6.66% from 24h ago.</Text>            
       </View>
 
       <View className="mr-[4vw] h-[16vh] mt-[6vh] items-center flex-col justify-between">
-        <Image className="h-8 w-8" source={require("../assets/light-mode.png")}></Image>
-        {/* <Image className="h-8 w-8" source={require("../assets/light-mode.png")}></Image> */}
+      <TouchableOpacity
+      onPress={() => {
+        const newSettings = {
+          ...settings,
+          darkMode: !settings.darkMode,
+        };
+        saveSettings(newSettings);
+      }}
+    >
+                    <Ionicons name={ `${!settings.darkMode ? "moon" : "light-up"}` } color={`${settings.darkMode ? "white" : "black"}`} size={30} />
+        </TouchableOpacity>
       </View>
     </View>
   );

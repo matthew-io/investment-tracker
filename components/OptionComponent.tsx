@@ -24,6 +24,9 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
     const [currencies, setCurrencies] = useState<string[]>([]);
     const [selectedCurrency, setSelectedCurrency] = useState(settings.currency);
 
+    const textColor = settings.darkMode ? "text-white" : "text-black"
+    const bgColor = settings.darkMode ? "bg-brand-gray" : "bg-brand-white"
+
     useEffect(() => {
         setNotesText(data.noteValue && data.noteValue !== "undefined" ? data.noteValue : "");
         if(data.option === "changeCurrency") {
@@ -55,7 +58,7 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
     if (data.option === "EnterText") {
         rightComponent = (
             <TextInput 
-              className="ml-4 w-40 bg-[#404040] px-2 text-white h-9 rounded-[6px]"
+              className={`ml-4 w-40 bg-[#404040] px-2 text-white h-9 rounded-[6px]`}
               onChangeText={(text) => {
                 data.onChangeText?.(text);
               }}
@@ -116,7 +119,7 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
                     {currencies.length === 0 ? (
                         <ActivityIndicator color="white" />
                     ) : (
-                        <ScrollView className="w-72" style={{ maxHeight: 200, backgroundColor: '#404040', borderRadius: 12, padding: 10 }}>
+                        <ScrollView className="w-72" style={{ maxHeight: 200, backgroundColor: '#ababab', borderRadius: 12, padding: 10 }}>
                             {currencies.map((currency) => (
                                 <TouchableOpacity 
                                     key={currency} 
@@ -130,7 +133,7 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
                                         borderColor: 'white'
                                     }}
                                 >
-                                    <Text className="text-white">
+                                    <Text className={`${textColor}`}>
                                         {currency} {selectedCurrency === currency ? "✓" : ""}
                                     </Text>
                                 </TouchableOpacity>
@@ -141,7 +144,7 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
             );
         } else if (data.option === "enableFaceId") {
             return (
-                <Text style={styles.modalText}>
+                <Text style={[styles.modalText, { color: textColor }]}>
                     {settings.faceIdEnabled ? "Confirm disabling FaceID" : "Confirm enabling FaceID"}
                 </Text>
             );
@@ -181,14 +184,14 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
                     }}
                 >
                     <BlurView intensity={5} style={styles.blurBackground}>
-                        <View style={styles.modalView}>
+                        <View style={styles.modalView} className={`${bgColor}`}>
                             {renderModalContent()}
                             <View className="flex-row w-2/3 mt-4 justify-between items-center">
                                 <TouchableOpacity className="p-4 bg-red-500 rounded-[12px]" onPress={() => setModalOpen(false)}>
-                                    <Text className="text-white">Cancel</Text>
+                                    <Text className={`${textColor}`}>Cancel</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity className="p-4 bg-green-500 rounded-[12px]" onPress={handleConfirm}>
-                                    <Text className="text-white">Confirm</Text>
+                                    <Text className={`${textColor}`}>Confirm</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>     
@@ -196,8 +199,8 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
                 </Modal>
                 <View className="h-[14vh] w-full border-b flex-row items-center justify-between px-4">
                     <View className="flex-1">
-                        <Text className="text-white font-bold text-xl">{data.header}</Text>
-                        <Text className="text-white text-sm">{data.description}</Text>
+                        <Text className={`${textColor} font-bold text-xl`}>{data.header}</Text>
+                        <Text className={`${textColor} text-sm`}>{data.description}</Text>
                     </View>
                     {rightComponent}
                 </View>
@@ -207,8 +210,8 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
         return (
             <View className="h-[14vh] w-full border-b flex-row items-center justify-between px-4">
                 <View className="flex-1">
-                    <Text className="text-white font-bold text-xl">{data.header}</Text>
-                    <Text className="text-white text-sm">{data.description}</Text>
+                    <Text className={`${textColor} font-bold text-xl`}>{data.header}</Text>
+                    <Text className={`${textColor} text-sm`}>{data.description}</Text>
                 </View>
                 {rightComponent}
             </View>
@@ -231,7 +234,6 @@ const styles = {
     },
     modalView: {
         margin: 20,
-        backgroundColor: '#2C2C2C',
         borderColor: 'white',
         borderWidth: 0.5,
         borderRadius: 20,
@@ -248,7 +250,6 @@ const styles = {
     },
     modalText: {
         marginBottom: 15,
-        color: 'white',
         textAlign: 'center',
     },
 };

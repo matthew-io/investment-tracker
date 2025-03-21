@@ -10,7 +10,8 @@ import { SettingsContext } from "./settingsContext";
 export default function SettingsScreen() {
     const { settings, saveSettings } = useContext(SettingsContext)
 
-    console.log("YOOO", settings.faceIdEnabled)
+    const textColor = settings.darkMode ? "text-white" : "text-black"
+    const bgColor = settings.darkMode ? "bg-brand-gray" : "bg-brand-white"
 
     const settingsItems: SettingsItem[] = 
     [
@@ -45,7 +46,7 @@ export default function SettingsScreen() {
     ]
     
     return (
-        <View className="h-full bg-brand-gray">
+        <View className={`h-full ${bgColor}`}>
             <ScreenHeader data="Settings"/>
             <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
                 {

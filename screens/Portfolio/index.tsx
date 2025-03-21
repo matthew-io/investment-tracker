@@ -6,27 +6,26 @@ import { Navbar } from '../../components/Navbar';
 import { TotalValue } from '../../components/TotalValue';
 import { PortfolioItem } from '../../components/PortfolioItem';
 import { ItemData } from 'types';
-import { Camera, CameraType } from "expo-camera";
 import { COINGECKO_API_KEY, POLYGON_IO_API_KEY } from "@env";
 import { db } from "../../database";
-import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
-import { insertAsset, insertTransactions, setupDatabase } from 'utils/dbUtil';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { insertAsset, insertPortfolio, insertTransactions, setupDatabase } from 'utils/dbUtil';
 import '../../global.css';
 import { SettingsContext } from 'screens/Settings/settingsContext';
 
 export default function PortfolioScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const newData = route.params?.data;
-
-  console.log("New data: ", newData)
-
   const { settings } = useContext(SettingsContext);
   const userCurrency = settings.currency;
+
+  const portfolioId = route.params?.portfolioId || "portfolio_1";
+  const newData = route.params?.data;
 
   const [holdings, setHoldings] = useState<ItemData[]>([]);
   const [prices, setPrices] = useState<Record<string, number>>({});
   const [icons, setIcons] = useState<Record<string, string>>({});
+  const [highs, setHighs] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(false);
   const [totalValue, setTotalValue] = useState(0);
   const [allCoinData, setAllCoinData] = useState<any>(null);
@@ -34,10 +33,10 @@ export default function PortfolioScreen() {
   const [allStockData, setAllStockData] = useState<any>(null);
   const [hasInserted, setHasInserted] = useState(false);
   const [stockHoldings, setStockHoldings] = useState<any[]>([]);
-  const [stockPrices, setStockPrices] = useState<Record<string, number>>({});
-  const [stockTotalValue, setStockTotalValue] = useState<number | undefined>(undefined);
   const [conversionRates, setConversionRates] = useState<Record<string, number>>({});
 
+  const textColor = settings.darkMode ? "text-white" : "text-black"
+  const bgColor = settings.darkMode ? "bg-brand-gray" : "bg-brand-white"
 
   useEffect(() => {
     const fetchConversionRates = async () => {
@@ -65,6 +64,7 @@ export default function PortfolioScreen() {
     const initDB = async () => {
       try {
         await setupDatabase();
+        await insertPortfolio(portfolioId, "My Portfolio");
         await fetchAllCoinData();
         await fetchAllStockData();
         setDatabaseExists(true);
@@ -76,6 +76,11 @@ export default function PortfolioScreen() {
   }, []);
 
   useEffect(() => {
+    const combinedHoldings = [
+      ...holdings.map((h) => ({ ...h, type: "crypto" })),
+      ...stockHoldings.map((s) => ({ ...s, type: "stock" })),
+    ];
+
     if (combinedHoldings.length === 0) {
       setTotalValue(0);
       return;
@@ -84,10 +89,10 @@ export default function PortfolioScreen() {
     let grandTotal = 0;
     for (const item of combinedHoldings) {
       const price = getPrice(item);
-      grandTotal += (price * item.quantity);
+      grandTotal += price * item.quantity;
     }
     setTotalValue(grandTotal);
-  }, [combinedHoldings, allStockData, prices, conversionRates]);
+  }, [holdings, stockHoldings, allStockData, prices, conversionRates]);
 
   useEffect(() => {
     if (databaseExists) {
@@ -101,10 +106,9 @@ export default function PortfolioScreen() {
 
     const doInsertAndFetch = async () => {
       try {
-        console.log("New data", newData.amount);
-
         await insertAsset(
           newData.id, 
+          portfolioId,
           newData.type,     
           newData.symbol,   
           newData.name      
@@ -116,13 +120,14 @@ export default function PortfolioScreen() {
           quantity: parseFloat(newData.amount),
           price: parseFloat(newData.price ?? 0),
           date: newData.date || new Date().toISOString(),
-          note: newData.note ?? ""
+          note: newData.note ?? "",
+          portfolio_id: portfolioId  
         };
 
         if (newData.mode === "update") {
           await db.execAsync(`
             DELETE FROM transactions
-            WHERE asset_id = '${newData.id}';
+            WHERE asset_id = '${newData.id}' AND portfolio_id = '${portfolioId}';
           `);
         }
 
@@ -143,12 +148,10 @@ export default function PortfolioScreen() {
     try {
       setLoading(true);
       const rest = restClient(POLYGON_IO_API_KEY);
-      
       const data = await rest.stocks.aggregatesGroupedDaily("2025-03-12", {
         adjusted: "true",
         include_otc: "true"
       });
-      
       const sortedData = data.results.sort((a, b) => b.v - a.v);
       const top1000ByVolume = sortedData.slice(0, 1000);
       setAllStockData(top1000ByVolume);
@@ -170,7 +173,6 @@ export default function PortfolioScreen() {
           'x-cg-demo-api-key': COINGECKO_API_KEY
         }
       };
-
       const response = await fetch(url, options);
       let coinData = await response.json();
       setAllCoinData(coinData);
@@ -192,9 +194,8 @@ export default function PortfolioScreen() {
           a.name,
           IFNULL(SUM(t.quantity), 0) AS quantity
         FROM assets a
-        LEFT JOIN transactions t
-          ON a.asset_id = t.asset_id
-        WHERE a.type = 'crypto'
+        LEFT JOIN transactions t ON a.asset_id = t.asset_id
+        WHERE a.type = 'crypto' AND a.portfolio_id = '${portfolioId}'
         GROUP BY a.asset_id;
       `;
       const dbData = await db.getAllAsync(query);
@@ -217,25 +218,24 @@ export default function PortfolioScreen() {
       };
       const response = await fetch(url, options);
       const coinData = await response.json();
-
       console.log("Coin data: ", coinData);
-  
-      let runningTotal = 0;
+
       const newPrices: Record<string, number> = {};
       const newIcons: Record<string, string> = {};
-  
+      const newHighs: Record<string, number> = {};  
+
       coinData.forEach((coin: any) => {
         const match = dbData.find((row) => row.id === coin.id);
         if (match) {
-          const quantity = parseFloat(match.quantity);
-          runningTotal += coin.current_price * quantity;
           newPrices[coin.id] = coin.current_price;
           newIcons[coin.id] = coin.image;
+          newHighs[coin.id] = coin.high_24h;  
         }
       });
   
       setPrices(newPrices);
       setIcons(newIcons);
+      setHighs(newHighs);  
   
       const newHoldings = dbData.map((row) => ({
         id: row.id,
@@ -243,7 +243,6 @@ export default function PortfolioScreen() {
         name: row.name,
         quantity: parseFloat(row.quantity),
       }));
-
       setHoldings(newHoldings);
     } catch (error) {
       console.log("Failed to fetch coin data:", error);
@@ -252,19 +251,9 @@ export default function PortfolioScreen() {
     }
   };
 
-  const getPrice = (item: any): number => {
-    if (item.type === "crypto") {
-      return prices[item.id] ?? 0;
-    } else {
-      const match = allStockData?.find((d: any) => d.T === item.symbol);
-      return match ? convertPrice(match.c) : 0;
-    }
-  };
-
   const fetchPersonalStockData = async () => {
     try {
       setLoading(true);
-  
       const query = `
         SELECT
           a.asset_id AS id,
@@ -272,9 +261,8 @@ export default function PortfolioScreen() {
           a.name,
           IFNULL(SUM(t.quantity), 0) AS quantity
         FROM assets a
-        LEFT JOIN transactions t
-          ON a.asset_id = t.asset_id
-        WHERE a.type = 'stock'
+        LEFT JOIN transactions t ON a.asset_id = t.asset_id
+        WHERE a.type = 'stock' AND a.portfolio_id = '${portfolioId}'
         GROUP BY a.asset_id;
       `;
       const dbData = await db.getAllAsync(query);
@@ -283,19 +271,8 @@ export default function PortfolioScreen() {
       if (!dbData || dbData.length === 0) {
         console.log("No stock holdings found in DB.");
         setStockHoldings([]);
-        setStockTotalValue(0);
         return;
       }
-  
-      let runningTotal = 0;
-      const placeholderPrices: Record<string, number> = {};
-  
-      dbData.forEach((row) => {
-        const quantity = parseFloat(row.quantity);
-        const pricePerShare = 0.01;
-        runningTotal += pricePerShare * quantity;
-        placeholderPrices[row.symbol] = pricePerShare;
-      });
   
       const newHoldings = dbData.map((row) => ({
         id: row.id,
@@ -312,15 +289,25 @@ export default function PortfolioScreen() {
     }
   };
 
+  const getPrice = (item: any): number => {
+    if (item.type === "crypto") {
+      return prices[item.id] ?? 0;
+    } else {
+      if (!allStockData) return 0;
+      const match = allStockData.find((d: any) => d.T === item.symbol);
+      return match ? convertPrice(match.c) : 0;
+    }
+  };
+
   const combinedHoldings = [
     ...holdings.map((h) => ({ ...h, type: "crypto" })),
     ...stockHoldings.map((s) => ({ ...s, type: "stock" })),
   ];
 
   return (
-    <View className="flex-1 bg-brand-gray">
+    <View className={`flex-1 ${bgColor}`}>
       {loading && (
-        <View className="absolute inset-0 flex-1 justify-center items-center bg-brand-gray">
+        <View className={`absolute inset-0 flex-1 justify-center items-center ${bgColor}`}>
           <ActivityIndicator size="large" color="#5c5c5c" />
         </View>
       )}
@@ -336,6 +323,9 @@ export default function PortfolioScreen() {
             })
             .map((item) => {
               const priceUsd = getPrice(item);
+
+              const itemHigh24h = item.type === "crypto" ? highs[item.id] : undefined;
+
               return (
                 <PortfolioItem
                   key={item.symbol}
@@ -344,6 +334,7 @@ export default function PortfolioScreen() {
                     priceUsd,
                     icon: item.type === "crypto" ? icons[item.id] : undefined,
                     note: item.note ?? "",
+                    high24h: itemHigh24h, 
                   }}
                 />
               );

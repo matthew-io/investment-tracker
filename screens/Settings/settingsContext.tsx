@@ -6,6 +6,7 @@ interface Settings {
   faceIdEnabled: boolean;
   enableAISummaries: boolean;
   summaryFrequency: string;
+  darkMode: boolean;
 }
 
 interface SettingsContextType {
