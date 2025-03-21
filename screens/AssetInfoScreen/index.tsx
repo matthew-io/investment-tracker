@@ -4,14 +4,20 @@ import { Navbar } from "components/Navbar";
 import { OptionComponent } from "components/OptionComponent";
 import { ScreenHeader } from "components/ScreenHeader";
 import { View, Text } from "react-native";
-import { useState } from "react"
+import { useContext, useState } from "react"
+import { SettingsContext } from "screens/Settings/settingsContext";
 
 export default function AssetInfoScreen() {
     const route = useRoute();
     const assetData = route.params?.data
 
+    const { settings, saveSettings } = useContext(SettingsContext)
+
     const [note, setNote] = useState(assetData.note);
     const [amount, setAmount] = useState(assetData.amount ? assetData.amount.toString() : "")
+
+    const textColor = settings.darkMode ? "text-white" : "text-black"
+    const bgColor = settings.darkMode ? "bg-brand-gray" : "bg-brand-white"
 
     const assetOptions = [
         {
@@ -38,7 +44,7 @@ export default function AssetInfoScreen() {
 
 
     return (
-        <View className="h-full bg-brand-gray">
+        <View className={`h-full ${bgColor}`}>
             <ScreenHeader image={assetData.icon} data={assetData.symbol.toUpperCase()} />
             {
                 assetOptions.map((option) => {

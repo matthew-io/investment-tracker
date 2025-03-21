@@ -41,9 +41,7 @@ export default function PortfolioScreen() {
   const bgColor = settings.darkMode ? "bg-brand-gray" : "bg-brand-white"
   const rest = restClient(POLYGON_IO_API_KEY);
 
-
   
-
   useEffect(() => {
     const fetchConversionRates = async () => {
       try {
@@ -70,7 +68,6 @@ export default function PortfolioScreen() {
     const initDB = async () => {
       try {
         await setupDatabase();
-        await insertPortfolio(portfolioId, "My Portfolio");
         await fetchAllCoinData();
         await fetchAllStockData();
         setDatabaseExists(true);
@@ -153,7 +150,7 @@ export default function PortfolioScreen() {
   const fetchAllStockData = async () => {
     try {
       setLoading(true);
-      const data = await rest.stocks.aggregatesGroupedDaily("2025-03-12", {
+      const data = await rest.stocks.aggregatesGroupedDaily("2025-03-20", {
         adjusted: "true",
         include_otc: "true"
       });

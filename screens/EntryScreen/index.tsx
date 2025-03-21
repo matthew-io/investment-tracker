@@ -1,47 +1,136 @@
-import React, { useContext } from "react";
+import { View, Text, TouchableOpacity, Modal, FlatList, TextInput } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { View, Text, TouchableOpacity, Alert } from "react-native";
-import * as LocalAuthentication from "expo-local-authentication";
-import { SettingsContext } from "screens/Settings/settingsContext";
+import { db } from "../../database";
+import { useEffect, useState } from "react";
 
 export default function EntryScreen() {
   const navigation = useNavigation();
-  const { settings } = useContext(SettingsContext);
+  const [openPortfolioModal, setOpenPortfolioModal] = useState(false);
+  const [createPortfolioModal, setCreatePortfolioModal] = useState(false);
+  const [portfolios, setPortfolios] = useState([]);
+  const [newPortfolioName, setNewPortfolioName] = useState("");
 
- const checkBiometricAvailability = async () => {
-  const hasHardware = await LocalAuthentication.hasHardwareAsync();
-  const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-  console.log("hasHardware:", hasHardware, "isEnrolled:", isEnrolled);
-  return hasHardware && isEnrolled;
-};
+  useEffect(() => {
+    fetchPortfolios();
+  }, []);
 
-const handleEnter = async () => {
-  console.log("handleEnter triggered");
-  if (settings.faceIdEnabled && await checkBiometricAvailability()) {
-    console.log("Biometric available, prompting authentication");
-    const result = await LocalAuthentication.authenticateAsync({
-      promptMessage: "Authenticate with Face ID",
-      fallbackLabel: "Enter Passcode",
-    });
-    console.log("Authentication result:", result);
-    if (result.success) {
-      navigation.navigate("Portfolio");
-    } else {
-      Alert.alert("Authentication failed", "Face ID authentication was not successful.");
+  const fetchPortfolios = async () => {
+    try {
+      const results = await db.getAllAsync("SELECT * FROM portfolios");
+      setPortfolios(results);
+    } catch (error) {
+      console.error("Couldn't fetch portfolios, error: ", error);
     }
-  } else {
-    console.log("Biometric not enabled or not available, navigating directly");
-    navigation.navigate("Portfolio");
-  }
-};
+  };
 
-  
+  const handleSelectPortfolio = (portfolioId: string) => {
+    setOpenPortfolioModal(false);
+    navigation.navigate("Portfolio", { portfolioId });
+  };
+
+  const handleCreatePortfolio = async () => {
+    if (!newPortfolioName.trim()) {
+      alert("Portfolio name cannot be empty.");
+      return;
+    }
+
+    const portfolioId = Date.now().toString(); 
+    try {
+      await db.execAsync(`
+        INSERT INTO portfolios (portfolio_id, name)
+        VALUES ('${portfolioId}', '${newPortfolioName}')
+      `);
+      setNewPortfolioName(""); 
+      setCreatePortfolioModal(false); 
+      fetchPortfolios(); 
+    } catch (error) {
+      console.error("Couldn't create portfolio, error: ", error);
+    }
+  };
+
   return (
     <View className="bg-brand-gray h-full justify-center items-center">
       <Text className="text-white text-6xl font-bold">zenith</Text>
-      <TouchableOpacity onPress={handleEnter}>
-        <Text className="mt-12 bg-white py-2 px-4 rounded-[6px] text-2xl">Enter</Text>
-      </TouchableOpacity>
+
+      <View className="absolute bottom-16 w-full px-6 flex flex-col space-y-4">
+        <TouchableOpacity
+          onPress={() => setOpenPortfolioModal(true)}
+          className="bg-white py-3 rounded-lg"
+        >
+          <Text className="text-black text-center text-2xl">Open Existing Portfolio</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => setCreatePortfolioModal(true)}
+          className="bg-green-500 py-3 mt-4 rounded-lg"
+        >
+          <Text className="text-white text-center text-2xl">Create New Portfolio</Text>
+        </TouchableOpacity>
+      </View>
+
+      <Modal visible={openPortfolioModal} transparent={true}>
+        <View className="flex justify-center items-center bg-black/50 h-full">
+          <View className="bg-white p-6 rounded-lg w-3/4">
+            <Text className="text-black text-center text-2xl font-bold mb-4">
+              Select a Portfolio
+            </Text>
+
+            <View className="max-h-80">
+              <FlatList
+                data={portfolios}
+                keyExtractor={(item) => item.portfolio_id}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    onPress={() => handleSelectPortfolio(item.portfolio_id)}
+                    className="py-3 px-4 bg-gray-200 rounded-lg mb-2"
+                  >
+                    <Text className="text-black text-center text-xl">{item.name}</Text>
+                  </TouchableOpacity>
+                )}
+                showsVerticalScrollIndicator={false}
+              />
+            </View>
+
+            <TouchableOpacity
+              onPress={() => setOpenPortfolioModal(false)}
+              className="mt-4 bg-red-500 py-3 rounded-lg"
+            >
+              <Text className="text-white text-center text-xl">Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal visible={createPortfolioModal} transparent={true}>
+        <View className="flex justify-center items-center bg-black/50 h-full">
+          <View className="bg-white p-6 rounded-lg w-3/4">
+            <Text className="text-black text-center text-2xl font-bold mb-4">
+              Create New Portfolio
+            </Text>
+
+            <TextInput
+              value={newPortfolioName}
+              onChangeText={setNewPortfolioName}
+              placeholder="Portfolio Name"
+              className="border border-gray-300 rounded-lg py-2 px-4 text-lg mb-4"
+            />
+
+            <TouchableOpacity
+              onPress={handleCreatePortfolio}
+              className="bg-blue-500 py-3 rounded-lg"
+            >
+              <Text className="text-white text-center text-xl">Save Portfolio</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => setCreatePortfolioModal(false)}
+              className="mt-4 bg-red-500 py-3 rounded-lg"
+            >
+              <Text className="text-white text-center text-xl">Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
