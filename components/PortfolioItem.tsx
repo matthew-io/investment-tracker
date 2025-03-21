@@ -194,6 +194,8 @@ const currencySymbols: Record<string, string> = {
 
 
   export const PortfolioItem: React.FC<Props> = ({ data }) => {
+    console.log("port item data", data)
+
     const navigation = useNavigation();
     const { settings } = useContext(SettingsContext);
     const currencySymbol = currencySymbols[settings.currency] || "$";
@@ -204,8 +206,8 @@ const currencySymbols: Record<string, string> = {
     let change = 0;
     if (data.high24h && data.high24h > 0) {
       change = ((data.priceUsd / data.high24h) * 100) - 100;
-    }
-  
+    } 
+
     const formattedChange = change.toLocaleString(undefined, { 
       maximumFractionDigits: 2,
       minimumFractionDigits: 2 
@@ -214,10 +216,10 @@ const currencySymbols: Record<string, string> = {
     const changeComponent = (
       <Text
         className={`ml-[1vw] text-sm ${
-          change < 0 ? "text-red-500" : "text-green-500"
+          change || data.change24h < 0 ? "text-red-500" : "text-green-500"
         }`}
       >
-        {`${formattedChange}% from 24h ago`}
+        {`${ data.type == "crypto" ? formattedChange : (data.change24h).toLocaleString()}% from 24h ago`}
       </Text>
     );
   

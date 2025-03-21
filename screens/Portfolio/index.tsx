@@ -34,9 +34,11 @@ export default function PortfolioScreen() {
   const [hasInserted, setHasInserted] = useState(false);
   const [stockHoldings, setStockHoldings] = useState<any[]>([]);
   const [conversionRates, setConversionRates] = useState<Record<string, number>>({});
+  const [pastHighs, setPastHighs] = useState<Record<string, number>>({});
 
   const textColor = settings.darkMode ? "text-white" : "text-black"
   const bgColor = settings.darkMode ? "bg-brand-gray" : "bg-brand-white"
+  const rest = restClient(POLYGON_IO_API_KEY);
 
   useEffect(() => {
     const fetchConversionRates = async () => {
@@ -147,7 +149,6 @@ export default function PortfolioScreen() {
   const fetchAllStockData = async () => {
     try {
       setLoading(true);
-      const rest = restClient(POLYGON_IO_API_KEY);
       const data = await rest.stocks.aggregatesGroupedDaily("2025-03-12", {
         adjusted: "true",
         include_otc: "true"
@@ -266,13 +267,24 @@ export default function PortfolioScreen() {
         GROUP BY a.asset_id;
       `;
       const dbData = await db.getAllAsync(query);
-      console.log("Stock DB data:", dbData);
-  
       if (!dbData || dbData.length === 0) {
-        console.log("No stock holdings found in DB.");
         setStockHoldings([]);
         return;
       }
+  
+      dbData.map((item) => {
+        setTimeout(() => {
+          rest.stocks.previousClose(
+            item.symbol,
+            { adjusted: "true" }
+          ).then((data) => {
+            if (data.results && data.results.length > 0) {
+              const pastHigh = data.results[0].h;
+              setPastHighs(prev => ({ ...prev, [item.symbol]: pastHigh }));
+            }
+          });
+        }, 100);
+      });
   
       const newHoldings = dbData.map((row) => ({
         id: row.id,
@@ -281,14 +293,13 @@ export default function PortfolioScreen() {
         quantity: parseFloat(row.quantity),
       }));
       setStockHoldings(newHoldings);
-      console.log("Successfully fetched personal stock data with placeholders.");
     } catch (error) {
       console.error("Failed to fetch personal stock data:", error);
     } finally {
       setLoading(false);
     }
   };
-
+  
   const getPrice = (item: any): number => {
     if (item.type === "crypto") {
       return prices[item.id] ?? 0;
@@ -299,48 +310,55 @@ export default function PortfolioScreen() {
     }
   };
 
-  const combinedHoldings = [
-    ...holdings.map((h) => ({ ...h, type: "crypto" })),
-    ...stockHoldings.map((s) => ({ ...s, type: "stock" })),
-  ];
+const combinedHoldings = [
+  ...holdings.map((h) => ({ ...h, type: "crypto" })),
+  ...stockHoldings.map((s) => ({ ...s, type: "stock" })),
+];
 
-  return (
-    <View className={`flex-1 ${bgColor}`}>
-      {loading && (
-        <View className={`absolute inset-0 flex-1 justify-center items-center ${bgColor}`}>
-          <ActivityIndicator size="large" color="#5c5c5c" />
-        </View>
-      )}
-      <StatusBar style="light" />
-      <TotalValue data={totalValue} />
-      <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
-        {combinedHoldings.length > 0 &&
-          combinedHoldings
-            .sort((a, b) => {
-              const aPrice = getPrice(a);
-              const bPrice = getPrice(b);
-              return bPrice * b.quantity - aPrice * a.quantity;
-            })
-            .map((item) => {
-              const priceUsd = getPrice(item);
+return (
+  <View className={`flex-1 ${bgColor}`}>
+    {loading && (
+      <View className={`absolute inset-0 flex-1 justify-center items-center ${bgColor}`}>
+        <ActivityIndicator size="large" color="#5c5c5c" />
+      </View>
+    )}
+    <StatusBar style="light" />
+    <TotalValue data={totalValue} />
+    <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
+      {combinedHoldings.length > 0 &&
+        combinedHoldings
+          .sort((a, b) => {
+            const aPrice = getPrice(a);
+            const bPrice = getPrice(b);
+            return bPrice * b.quantity - aPrice * a.quantity;
+          })
+          .map((item) => {
+            const priceUsd = getPrice(item);
+            let change24h;
+            if (item.type === "stock") {
+              const todayData = allStockData && allStockData.find((d: any) => d.T === item.symbol);
+              const todayHigh = todayData ? todayData.h : 0;
+              const pastHigh = pastHighs[item.symbol] || 0;
+              change24h = pastHigh ? ((todayHigh - pastHigh) / pastHigh) * 100 : 0;
+            }
+            const itemHigh24h = item.type === "crypto" ? highs[item.id] : undefined;
+            return (
+              <PortfolioItem
+                key={item.symbol}
+                data={{
+                  ...item,
+                  priceUsd,
+                  icon: item.type === "crypto" ? icons[item.id] : undefined,
+                  note: item.note ?? "",
+                  high24h: itemHigh24h,
+                  change24h,
+                }}
+              />
+            );
+          })}
+    </ScrollView>
+    <Navbar coin={allCoinData} stock={allStockData} />
+  </View>
+);
 
-              const itemHigh24h = item.type === "crypto" ? highs[item.id] : undefined;
-
-              return (
-                <PortfolioItem
-                  key={item.symbol}
-                  data={{
-                    ...item,
-                    priceUsd,
-                    icon: item.type === "crypto" ? icons[item.id] : undefined,
-                    note: item.note ?? "",
-                    high24h: itemHigh24h, 
-                  }}
-                />
-              );
-            })}
-      </ScrollView>
-      <Navbar coin={allCoinData} stock={allStockData}/>
-    </View>
-  );
 }
