@@ -6,8 +6,9 @@ import { useContext } from "react";
 import Ionicons from "@expo/vector-icons/Entypo";
 
 type Props = {
-    data: number;
-}
+  data: number;
+  portfolioChange: number;
+};
 
 // this list of currency symbols was AI generated: https://chatgpt.com/share/67dc1cab-684c-8005-8d7f-50c8d9994408
 
@@ -195,12 +196,14 @@ const currencySymbols: Record<string, string> = {
 };
 
 
-export const TotalValue: React.FC<Props> = ( {data} ) => {
+export const TotalValue: React.FC<Props> = ( {data, portfolioChange} ) => {
   const { settings, saveSettings } = useContext(SettingsContext);
   const currencySymbol = currencySymbols[settings.currency] || "$";
 
   const textColor = settings.darkMode ? "text-white" : "text-black"
   const bgColor = settings.darkMode ? "bg-brand-gray" : "bg-brand-white"
+
+  const formattedChange = portfolioChange.toFixed(2);
 
   return (
     <View className={`flex-row h-[25vh] w-full items-center ${bgColor} justify-between`}
@@ -214,7 +217,7 @@ export const TotalValue: React.FC<Props> = ( {data} ) => {
       <View className="flex-col ml-[4vw] mt-[5vh]">
         <Text className={`${textColor} text-xl`}>Total Value</Text>
         <Text className={`${textColor} text-4xl font-bold`}>{currencySymbol}{data.toLocaleString()}</Text>
-        <Text className="text-green-500">+6.66% from 24h ago.</Text>            
+        <Text className={`${formattedChange < 0 ? "text-red-500" : "text-green-500"}` }>{formattedChange}% from 24h ago.</Text>            
       </View>
 
       <View className="mr-[4vw] h-[16vh] mt-[6vh] items-center flex-col justify-between">

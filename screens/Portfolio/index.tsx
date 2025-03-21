@@ -35,10 +35,14 @@ export default function PortfolioScreen() {
   const [stockHoldings, setStockHoldings] = useState<any[]>([]);
   const [conversionRates, setConversionRates] = useState<Record<string, number>>({});
   const [pastHighs, setPastHighs] = useState<Record<string, number>>({});
+  const [portfolioChange, setPortfolioChange] = useState(0);
 
   const textColor = settings.darkMode ? "text-white" : "text-black"
   const bgColor = settings.darkMode ? "bg-brand-gray" : "bg-brand-white"
   const rest = restClient(POLYGON_IO_API_KEY);
+
+
+  
 
   useEffect(() => {
     const fetchConversionRates = async () => {
@@ -315,6 +319,38 @@ const combinedHoldings = [
   ...stockHoldings.map((s) => ({ ...s, type: "stock" })),
 ];
 
+
+useEffect(() => {
+  if (!combinedHoldings.length) {
+    setPortfolioChange(0);
+    return;
+  }
+
+  let totalNow = 0;
+  let totalPast = 0;
+
+  for (const asset of combinedHoldings) {
+    const todayPrice = getPrice(asset);
+    totalNow += todayPrice * asset.quantity;
+
+    let yesterdayPrice = 0;
+    if (asset.type === "stock") {
+      yesterdayPrice = pastHighs[asset.symbol] ?? 0;
+    } else {
+      yesterdayPrice = highs[asset.id] ?? 0;
+    }
+    totalPast += yesterdayPrice * asset.quantity;
+  }
+
+  const pct =
+    totalPast > 0
+      ? ((totalNow - totalPast) / totalPast) * 100
+      : 0;
+
+  setPortfolioChange(pct);
+}, [combinedHoldings, highs, pastHighs]);
+
+
 return (
   <View className={`flex-1 ${bgColor}`}>
     {loading && (
@@ -323,7 +359,7 @@ return (
       </View>
     )}
     <StatusBar style="light" />
-    <TotalValue data={totalValue} />
+    <TotalValue data={totalValue} portfolioChange={portfolioChange} />
     <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
       {combinedHoldings.length > 0 &&
         combinedHoldings
