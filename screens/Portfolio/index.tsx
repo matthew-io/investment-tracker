@@ -43,6 +43,14 @@ export default function PortfolioScreen() {
   const bgColor = settings.darkMode ? "bg-brand-gray" : "bg-brand-white"
   const rest = restClient(POLYGON_IO_API_KEY);
 
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    }),
+  });
+
   useEffect(() => {
     (async () => {
       const { status } = await Notifications.requestPermissionsAsync();
@@ -178,7 +186,7 @@ export default function PortfolioScreen() {
 
   const computeGainersAndLosers = (holdings) => {
     if (!holdings.length) return { biggestGainer: null, biggestLoser: null };
-    const sorted = [...holdings].sort((a, b) => (b.change24h || 0) - (a.change24h || 0));
+    const sorted = [...holdings].sort((a, b) => (b.high24h || 0) - (a.high24h || 0));
     return {
       biggestGainer: sorted[0],
       biggestLoser: sorted[sorted.length - 1],
@@ -191,16 +199,25 @@ export default function PortfolioScreen() {
     holdings,
   }) => {
     const { biggestGainer, biggestLoser } = computeGainersAndLosers(holdings);
+
+    const { status } = await Notifications.getPermissionsAsync();
+  if (status !== 'granted') {
+    const { status: newStatus } = await Notifications.requestPermissionsAsync();
+    if (newStatus !== 'granted') {
+      alert('Failed to get push token for push notification!');
+      return;
+    }
+  }
   
     const sign = portfolioChange >= 0 ? 'up' : 'down';
     const pctString = portfolioChange.toFixed(2);
     const bodyLines = [];
   
     if (biggestGainer) {
-      bodyLines.push(`Biggest gainer: ${biggestGainer.symbol} (${(biggestGainer.change24h || 0).toFixed(2)}%)`);
+      bodyLines.push(`Biggest gainer: ${biggestGainer.symbol.toUpperCase()} (${(biggestGainer.change24h || 0).toFixed(2)}%)`);
     }
     if (biggestLoser) {
-      bodyLines.push(`Biggest loser: ${biggestLoser.symbol} (${(biggestLoser.change24h || 0).toFixed(2)}%)`);
+      bodyLines.push(`Biggest loser: ${biggestLoser.symbol.toUpperCase()} (${(biggestLoser.change24h || 0).toFixed(2)}%)`);
     }
   
     await Notifications.scheduleNotificationAsync({
@@ -209,8 +226,9 @@ export default function PortfolioScreen() {
         body: bodyLines.join('\n'),
       },
       trigger: {
-        hour: 9,
+        hour: 0,
         minute: 0,
+        second: 10,
         repeats: true,
       },
     });
@@ -367,22 +385,6 @@ const combinedHoldings = [
   ...holdings.map((h) => ({ ...h, type: "crypto" })),
   ...stockHoldings.map((s) => ({ ...s, type: "stock" })),
 ];
-
-useEffect(() => {
-  const testNotification = async () => {
-    await Notifications.scheduleNotificationAsync({
-      content: {
-        title: "Test Notification",
-        body: "This notification fired immediately!",
-      },
-      trigger: {
-        seconds: 2,
-        repeats: true,
-      }
-    });
-  };
-  testNotification();
-}, []);
 
 
 useEffect(() => {

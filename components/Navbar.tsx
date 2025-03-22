@@ -123,7 +123,7 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
 
                     {assetType === "Crypto" && cryptoEntryMethod === "" && (
                       <>
-                        <Text style={styles.modalText}>
+                        <Text style={styles.modalText} className={`${textColor}`}>
                           How would you like to add your crypto?
                         </Text>
                         <View className="flex-row items-center mt-4">
@@ -160,15 +160,21 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
 
                     {assetType === "Crypto" && cryptoEntryMethod === "manual" && (
                       <>
-                        <Text style={styles.modalText}>
+                        <Text style={styles.modalText} className={`${textColor}`}>
                           Select a coin from below...
                         </Text>
                         <Dropdown
-                          style={styles.dropdown}
-                          placeholderStyle={[styles.placeholderStyle, { backgroundColor: bgColor }]}
-                          selectedTextStyle={styles.selectedTextStyle}
-                          inputSearchStyle={styles.inputSearchStyle}
-                          containerStyle={styles.dropdownList}
+                          style={[styles.dropdown, { backgroundColor: settings.darkMode ? '#2c2c2c' : 'white' }]}
+                          placeholderStyle={[styles.placeholderStyle, { color: settings.darkMode ? 'white' : 'black' }]}
+                          selectedTextStyle={[styles.selectedTextStyle, { color: settings.darkMode ? 'white' : 'black' }]}
+                          inputSearchStyle={[styles.inputSearchStyle, { 
+                            color: settings.darkMode ? 'white' : 'black',
+                            backgroundColor: settings.darkMode ? '#2c2c2c' : 'white'
+                          }]}
+                          containerStyle={[styles.dropdownList, { 
+                            backgroundColor: settings.darkMode ? '#2c2c2c' : 'white',
+                            opacity: 1
+                          }]}
                           placeholder="Select..."
                           data={coinData}
                           search
@@ -183,12 +189,14 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
                             });
                           }}
                           renderItem={(item: any) => (
-                            <View style={[styles.itemContainer, {backgroundColor: bgColor}]}>
+                            <View style={[styles.itemContainer, {
+                              backgroundColor: settings.darkMode ? '#2c2c2c' : 'white'
+                            }]}>
                               <Image
                                 source={{ uri: item.image }}
                                 style={styles.itemImage}
                               />
-                              <Text style={styles.itemText}>
+                              <Text style={[styles.itemText, { color: settings.darkMode ? 'white' : 'black' }]}>
                                 {item.label.toUpperCase()}
                               </Text>
                             </View>
@@ -196,7 +204,8 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
                           labelField="label"
                           valueField="label"
                         />
-                        <TouchableOpacity
+                 
+                       <TouchableOpacity
                           className="p-4 bg-red-500 mt-4 rounded-[12px]"
                           onPress={() => {
                             setModalVisible(false);
@@ -213,7 +222,7 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
 
                     {assetType === "Stock" && (
                       <>
-                        <Text style={styles.modalText}>
+                        <Text style={styles.modalText} className={`${textColor}`}>
                           Select a stock from below...
                         </Text>
                         <Dropdown
@@ -221,7 +230,10 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
                                 placeholderStyle={[styles.placeholderStyle, { color: textColor }]}
                                 selectedTextStyle={[styles.selectedTextStyle, { color: textColor }]}
                                 inputSearchStyle={[styles.inputSearchStyle, { color: textColor }]}
-                                containerStyle={[styles.dropdownList, { backgroundColor: bgColor }]}
+                                containerStyle={[styles.dropdownList, { 
+                                  backgroundColor: settings.darkMode ? '#2c2c2c' : 'white', 
+                                  opacity: 1 
+                                }]}
                                 placeholder="Select..."
                                 data={coinData}
                                 search
@@ -236,11 +248,17 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
                                   });
                                 }}
                                 renderItem={(item: any) => (
-                                  <View style={styles.itemContainer}>
-                                    <Image source={{ uri: item.image }} style={styles.itemImage} />
-                                    <Text style={[styles.itemText, { color: textColor }]}>
-                                      {item.label.toUpperCase()}
-                                    </Text>
+                                  <View style={[styles.itemContainer, {backgroundColor: bgColor}]}>
+                                    <Image
+                                      source={{ uri: item.image }}
+                                      style={styles.itemImage}
+                                    />
+                                   <Text style={[styles.itemText, { 
+                                    color: settings.darkMode ? 'white' : 'black', 
+                                    opacity: 1
+                                  }]}>
+                                    {item.label.toUpperCase()}
+                                  </Text>
                                   </View>
                                 )}
                                 labelField="label"
@@ -294,7 +312,7 @@ const styles = StyleSheet.create({
   },
   modalView: {
     margin: 20,
-    borderColor: 'white',
+    // borderColor: 'white',
     borderWidth: 0.5,
     borderRadius: 20,
     padding: 35,
@@ -330,14 +348,13 @@ const styles = StyleSheet.create({
   },
   selectedTextStyle: {
     fontSize: 16,
-    color: 'white',
+    // color: 'white',
     textTransform: 'uppercase',
   },
   inputSearchStyle: {
     height: 40,
     borderRadius: 6,
     marginTop: 12,
-    // color: 'white',
     fontSize: 16,
   },
   itemContainer: {
