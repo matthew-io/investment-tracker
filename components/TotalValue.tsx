@@ -1,9 +1,10 @@
-import { View, Text, Image, TouchableOpacity } from "react-native"
+import { View, Text, Image, TouchableOpacity, ImageBackground } from "react-native"
 import "../global.css"
 import { ItemData } from "types";
 import { SettingsContext } from "screens/Settings/settingsContext";
 import { useContext } from "react";
 import Ionicons from "@expo/vector-icons/Entypo";
+import { opacity } from "react-native-reanimated/lib/typescript/Colors";
 
 type Props = {
   data: number;
@@ -203,10 +204,14 @@ export const TotalValue: React.FC<Props> = ( {data, portfolioChange} ) => {
   const textColor = settings.darkMode ? "text-white" : "text-black"
   const bgColor = settings.darkMode ? "bg-brand-gray" : "bg-brand-white"
 
+  const splashBg = require("../assets/splashbg.png");
+  const splashBgLight = require("../assets/totalvaluebglight.png");
+  const selectedBg = settings.darkMode ? splashBg : splashBgLight;
+
   const formattedChange = portfolioChange.toFixed(2);
 
   return (
-    <View className={`flex-row h-[25vh] w-full items-center ${bgColor} justify-between`}
+    <ImageBackground source={selectedBg} className={`flex-row h-[25vh] w-full items-center ${bgColor} justify-between`}
     style={{
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 1 },
@@ -233,6 +238,6 @@ export const TotalValue: React.FC<Props> = ( {data, portfolioChange} ) => {
                     <Ionicons name={ `${!settings.darkMode ? "moon" : "light-up"}` } color={`${settings.darkMode ? "white" : "black"}`} size={30} />
         </TouchableOpacity>
       </View>
-    </View>
+    </ImageBackground>
   );
 };

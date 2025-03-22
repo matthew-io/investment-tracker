@@ -2,7 +2,9 @@ import { View, Text, TouchableOpacity, Modal, FlatList, TextInput } from "react-
 import { useNavigation } from "@react-navigation/native";
 import { db } from "../../database";
 import { useContext, useEffect, useState } from "react";
+import { ImageBackground } from "react-native";
 import { SettingsContext } from "screens/Settings/settingsContext";
+import { BlurView } from "expo-blur";
 
 export default function EntryScreen() {
   const navigation = useNavigation();
@@ -31,7 +33,7 @@ export default function EntryScreen() {
       console.error("Couldn't fetch portfolios, error: ", error);
     }
   };
-  
+
   const handleCreatePortfolio = async () => {
     if (!newPortfolioName.trim()) {
       alert("Portfolio name cannot be empty.");
@@ -47,6 +49,9 @@ export default function EntryScreen() {
       setNewPortfolioName(""); 
       setCreatePortfolioModal(false); 
       fetchPortfolios(); 
+      const newSettings = { ...settings, currentPortfolioId: portfolioId };
+      saveSettings(newSettings);
+      navigation.navigate("Portfolio")
     } catch (error) {
       console.error("Couldn't create portfolio, error: ", error);
     }
@@ -54,7 +59,7 @@ export default function EntryScreen() {
 
 
   return (
-    <View className="bg-brand-gray h-full justify-center items-center">
+    <ImageBackground source={require("../../assets/splashbg.png")} className="bg-brand-gray h-full justify-center items-center">
       <Text className="text-white text-6xl font-bold">zenith</Text>
 
       <View className="absolute bottom-16 w-full px-6 flex flex-col space-y-4">
@@ -74,10 +79,11 @@ export default function EntryScreen() {
       </View>
 
       <Modal visible={openPortfolioModal} transparent={true}>
-        <View className="flex justify-center items-center bg-black/50 h-full">
-          <View className="bg-white p-6 rounded-lg w-3/4">
-            <Text className="text-black text-center text-2xl font-bold mb-4">
-              Select a Portfolio
+        <View className="flex justify-center items-center h-full">
+        <BlurView intensity={5} tint="dark" className="absolute top-0 left-0 w-full h-full" />
+          <View className="bg-brand-gray p-6 rounded-lg w-3/4">
+            <Text className="text-white text-center text-lg  mb-4">
+              Select a portfolio from below...
             </Text>
 
             <View className="max-h-80">
@@ -98,7 +104,7 @@ export default function EntryScreen() {
 
             <TouchableOpacity
               onPress={() => setOpenPortfolioModal(false)}
-              className="mt-4 bg-red-500 py-3 rounded-lg"
+              className="mt-4 w-1/3 self-center bg-red-500 py-3 rounded-lg"
             >
               <Text className="text-white text-center text-xl">Cancel</Text>
             </TouchableOpacity>
@@ -107,7 +113,7 @@ export default function EntryScreen() {
       </Modal>
 
       <Modal visible={createPortfolioModal} transparent={true}>
-        <View className="flex justify-center items-center bg-black/50 h-full">
+        <View className="flex justify-center  items-center bg-black/50 h-full">
           <View className="bg-white p-6 rounded-lg w-3/4">
             <Text className="text-black text-center text-2xl font-bold mb-4">
               Create New Portfolio
@@ -136,6 +142,6 @@ export default function EntryScreen() {
           </View>
         </View>
       </Modal>
-    </View>
+    </ImageBackground>
   );
 }

@@ -197,7 +197,9 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
                         </View>     
                     </BlurView>
                 </Modal>
-                <View className="h-[14vh] w-full border-b flex-row items-center justify-between px-4">
+                <View className="h-[14vh] w-full border-b flex-row items-center justify-between px-4" style={{
+                    borderColor: settings.darkMode ? "#333" : "#ebebeb",
+                }}>
                     <View className="flex-1">
                         <Text className={`${textColor} font-bold text-xl`}>{data.header}</Text>
                         <Text className={`${textColor} text-sm`}>{data.description}</Text>
@@ -208,7 +210,9 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
         );
     } else {
         return (
-            <View className="h-[14vh] w-full border-b flex-row items-center justify-between px-4">
+            <View className="h-[14vh] w-full border-b flex-row items-center justify-between px-4" style={{
+                borderColor: settings.darkMode ? "#333" : "#ebebeb",
+            }}>
                 <View className="flex-1">
                     <Text className={`${textColor} font-bold text-xl`}>{data.header}</Text>
                     <Text className={`${textColor} text-sm`}>{data.description}</Text>

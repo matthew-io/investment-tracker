@@ -1,4 +1,4 @@
-import { View, TextStyle, Text, TouchableOpacity, Modal, StyleSheet, Alert, Image, Pressable, Touchable, TouchableWithoutFeedback } from "react-native";
+import { View, TextStyle, Text, TouchableOpacity, Modal, StyleSheet, Alert, Image, Pressable, Touchable, TouchableWithoutFeedback, ImageBackground } from "react-native";
 import React, { useState, useEffect, useContext } from "react";
 import { HomeIcon } from "./HomeIcon";
 import Ionicons from "@expo/vector-icons/Entypo";
@@ -62,8 +62,14 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
     setCryptoEntryMethod("");
   };
 
+  const splashBg = require("../assets/splashbg.png");
+  const splashBgLight = require("../assets/totalvaluebglight.png");
+  const selectedBg = settings.darkMode ? splashBg : splashBgLight;
+
   return (
-    <View className={`absolute bottom-0 left-0 right-0 h-24 ${bgColor} flex-row items-center justify-around border-t border-[#1c1c1c]`}>
+    <ImageBackground source={selectedBg} className={`absolute bottom-0 left-0 right-0 h-24 ${bgColor} flex-row items-center justify-around border-t`} style={{
+      borderColor: settings.darkMode ? "" : "#ebebeb",
+    }}>
       <TouchableOpacity onPress={() => navigation.navigate("Portfolio")}>
         <Ionicons name="home" color={`${settings.darkMode ? "white" : "black"}`} size={42} />
       </TouchableOpacity>
@@ -284,7 +290,7 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
       <TouchableOpacity onPress={() => navigation.navigate("Settings")}>
         <Ionicons name="cog" color={`${settings.darkMode ? "white" : "black"}`} size={42} />
       </TouchableOpacity>
-    </View>
+    </ImageBackground>
   );
 };
 

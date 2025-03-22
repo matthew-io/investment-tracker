@@ -233,10 +233,14 @@ const currencySymbols: Record<string, string> = {
       maximumFractionDigits: 2,
       minimumFractionDigits: 2,
     });
+
+    const borderColor = settings.darkMode ? "" : "#ebebeb"
   
     return (
       <TouchableOpacity onPress={() => navigation.navigate("AssetInfoScreen", { data })}>
-        <View className={`flex-row h-[10vh] w-full border-b border-[${settings.darkMode ? "#1c1c1c" : "#e0dede"}]`}>  
+        <View className={`flex-row h-[10vh] w-full border-b`} style={{
+          borderColor: settings.darkMode ? "" : "#ebebeb",
+        }}>  
           <View className="flex-row items-center ml-[3vw]">
             <Image className="h-10 w-10 rounded-full" source={{ uri: data.icon }} />
             <View className="flex-col ml-[3vw]">

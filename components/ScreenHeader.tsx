@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { View, Text, Image, StyleSheet } from "react-native";
+import { View, Text, Image, StyleSheet, ImageBackground } from "react-native";
 import { SettingsContext } from "screens/Settings/settingsContext";
 
 type Props = {
@@ -12,9 +12,13 @@ export const ScreenHeader: React.FC<Props> = ({ data, image }) => {
 
   const textColor = settings.darkMode ? "text-white" : "text-black"
   const bgColor = settings.darkMode ? "bg-brand-gray" : "bg-brand-white"
+  const splashBg = require("../assets/splashbg.png");
+  const splashBgLight = require("../assets/totalvaluebglight.png");
+  const selectedBg = settings.darkMode ? splashBg : splashBgLight;
 
   return (
-      <View
+      <ImageBackground
+        source={selectedBg}
         className={`flex-row h-[25vh] w-full items-center ${bgColor}`}
         style={{
           shadowColor: "#000",
@@ -32,9 +36,9 @@ export const ScreenHeader: React.FC<Props> = ({ data, image }) => {
       )}
     
         <Text className={`${textColor} ml-4 font-bold text-4xl mt-12`}>
-          {data}
+          {`${data}/${settings.currency}`}
         </Text>
-    </View>
+    </ImageBackground>
   );
 };
 
