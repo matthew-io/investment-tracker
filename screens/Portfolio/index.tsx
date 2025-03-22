@@ -12,6 +12,8 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { insertAsset, insertPortfolio, insertTransactions, setupDatabase } from 'utils/dbUtil';
 import '../../global.css';
 import { SettingsContext } from 'screens/Settings/settingsContext';
+import * as Notifications from "expo-notifications"
+
 
 export default function PortfolioScreen() {
   const navigation = useNavigation();
@@ -19,7 +21,7 @@ export default function PortfolioScreen() {
   const { settings } = useContext(SettingsContext);
   const userCurrency = settings.currency;
 
-  const portfolioId = route.params?.portfolioId || "portfolio_1";
+  const portfolioId = settings.currentPortfolioId; 
   const newData = route.params?.data;
 
   const [holdings, setHoldings] = useState<ItemData[]>([]);
@@ -41,6 +43,14 @@ export default function PortfolioScreen() {
   const bgColor = settings.darkMode ? "bg-brand-gray" : "bg-brand-white"
   const rest = restClient(POLYGON_IO_API_KEY);
 
+  useEffect(() => {
+    (async () => {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== 'granted') {
+        alert('Please enable notifications in settings');
+      }
+    })();
+  }, []);
   
   useEffect(() => {
     const fetchConversionRates = async () => {
@@ -77,6 +87,8 @@ export default function PortfolioScreen() {
     };
     initDB();
   }, []);
+
+
 
   useEffect(() => {
     const combinedHoldings = [
@@ -163,6 +175,46 @@ export default function PortfolioScreen() {
       setLoading(false);
     }
   };
+
+  const computeGainersAndLosers = (holdings) => {
+    if (!holdings.length) return { biggestGainer: null, biggestLoser: null };
+    const sorted = [...holdings].sort((a, b) => (b.change24h || 0) - (a.change24h || 0));
+    return {
+      biggestGainer: sorted[0],
+      biggestLoser: sorted[sorted.length - 1],
+    };
+  }
+
+  const schedulePortfolioNotification = async ({
+    totalValue,
+    portfolioChange,
+    holdings,
+  }) => {
+    const { biggestGainer, biggestLoser } = computeGainersAndLosers(holdings);
+  
+    const sign = portfolioChange >= 0 ? 'up' : 'down';
+    const pctString = portfolioChange.toFixed(2);
+    const bodyLines = [];
+  
+    if (biggestGainer) {
+      bodyLines.push(`Biggest gainer: ${biggestGainer.symbol} (${(biggestGainer.change24h || 0).toFixed(2)}%)`);
+    }
+    if (biggestLoser) {
+      bodyLines.push(`Biggest loser: ${biggestLoser.symbol} (${(biggestLoser.change24h || 0).toFixed(2)}%)`);
+    }
+  
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: `Portfolio is ${sign} ${pctString}%`,
+        body: bodyLines.join('\n'),
+      },
+      trigger: {
+        hour: 9,
+        minute: 0,
+        repeats: true,
+      },
+    });
+  }
 
   const fetchAllCoinData = async () => {
     try {
@@ -316,6 +368,22 @@ const combinedHoldings = [
   ...stockHoldings.map((s) => ({ ...s, type: "stock" })),
 ];
 
+useEffect(() => {
+  const testNotification = async () => {
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "Test Notification",
+        body: "This notification fired immediately!",
+      },
+      trigger: {
+        seconds: 2,
+        repeats: true,
+      }
+    });
+  };
+  testNotification();
+}, []);
+
 
 useEffect(() => {
   if (!combinedHoldings.length) {
@@ -346,6 +414,16 @@ useEffect(() => {
 
   setPortfolioChange(pct);
 }, [combinedHoldings, highs, pastHighs]);
+
+useEffect(() => {
+  if (combinedHoldings.length) {
+    schedulePortfolioNotification({
+      totalValue,
+      portfolioChange,
+      holdings: combinedHoldings, 
+    });
+  }
+}, [combinedHoldings, portfolioChange]);
 
 
 return (

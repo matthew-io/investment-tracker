@@ -45,6 +45,7 @@ export const setupDatabase = async () => {
 };
 
 export const insertPortfolio = async (portfolio_id: string, name: string) => {
+
     try {
       await db.execAsync(`
         INSERT INTO portfolios (portfolio_id, name)
@@ -89,6 +90,10 @@ export const getAllTransactions = async () => {
 }
 
 export const insertTransactions = async (tx: any | any[]) => {
+  console.log("portfolio id", tx.portfolio_id)
+  let result = await db.getAllAsync("SELECT * FROM portfolios")
+  console.log("portfolio db stuff", result)
+
     try {
       if (Array.isArray(tx)) {
         for (const t of tx) {

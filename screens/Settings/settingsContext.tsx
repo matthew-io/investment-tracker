@@ -7,6 +7,7 @@ interface Settings {
   enableAISummaries: boolean;
   summaryFrequency: string;
   darkMode: boolean;
+  currentPortfolioId: string;
 }
 
 interface SettingsContextType {

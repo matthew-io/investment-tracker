@@ -1,7 +1,8 @@
 import { View, Text, TouchableOpacity, Modal, FlatList, TextInput } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { db } from "../../database";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { SettingsContext } from "screens/Settings/settingsContext";
 
 export default function EntryScreen() {
   const navigation = useNavigation();
@@ -9,10 +10,18 @@ export default function EntryScreen() {
   const [createPortfolioModal, setCreatePortfolioModal] = useState(false);
   const [portfolios, setPortfolios] = useState([]);
   const [newPortfolioName, setNewPortfolioName] = useState("");
+  const { settings, saveSettings } = useContext(SettingsContext)
 
   useEffect(() => {
     fetchPortfolios();
   }, []);
+
+  const handleSelectPortfolio = (portfolioId: string) => {
+    const newSettings = { ...settings, currentPortfolioId: portfolioId };
+    saveSettings(newSettings);
+    setOpenPortfolioModal(false);
+    navigation.navigate("Portfolio");
+  };
 
   const fetchPortfolios = async () => {
     try {
@@ -22,12 +31,7 @@ export default function EntryScreen() {
       console.error("Couldn't fetch portfolios, error: ", error);
     }
   };
-
-  const handleSelectPortfolio = (portfolioId: string) => {
-    setOpenPortfolioModal(false);
-    navigation.navigate("Portfolio", { portfolioId });
-  };
-
+  
   const handleCreatePortfolio = async () => {
     if (!newPortfolioName.trim()) {
       alert("Portfolio name cannot be empty.");
@@ -47,6 +51,7 @@ export default function EntryScreen() {
       console.error("Couldn't create portfolio, error: ", error);
     }
   };
+
 
   return (
     <View className="bg-brand-gray h-full justify-center items-center">
