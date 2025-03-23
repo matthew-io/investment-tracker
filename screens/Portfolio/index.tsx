@@ -9,7 +9,7 @@ import { ItemData } from 'types';
 import { COINGECKO_API_KEY, POLYGON_IO_API_KEY } from "@env";
 import { db } from "../../database";
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { insertAsset, insertPortfolio, insertTransactions, setupDatabase } from 'utils/dbUtil';
+import { insertAsset, insertPortfolio, insertTransactions, setupDatabase, updateTransaction } from 'utils/dbUtil';
 import '../../global.css';
 import { SettingsContext } from 'screens/Settings/settingsContext';
 import * as Notifications from "expo-notifications"
@@ -125,48 +125,63 @@ export default function PortfolioScreen() {
   }, [databaseExists]);
 
   useEffect(() => {
-    if (!databaseExists || !newData || hasInserted) return;
+    if (!databaseExists || !newData || hasInserted) {
+     
+      setLoading(false);
+      return;
+    }
+    
+    const assetType = newData.type || "crypto";
 
-    const doInsertAndFetch = async () => {
+    setLoading(true);
+    const doUpdateAsset = async () => {
       try {
         await insertAsset(
-          newData.id, 
+          newData.id,
           portfolioId,
-          newData.type,     
-          newData.symbol,   
-          newData.name      
+          assetType,
+          newData.symbol,
         );
 
-        const txToInsert = {
-          tx_id: `tx_${Date.now()}`,  
+        const assetRows = await db.getAllAsync(`SELECT * FROM assets WHERE asset_id = '${newData.id}';`);
+        console.log("Asset row after upsert:", assetRows);
+
+    
+        const txData = {
+          tx_id: `tx_${Date.now()}`,
           asset_id: newData.id,
           quantity: parseFloat(newData.amount),
           price: parseFloat(newData.price ?? 0),
           date: newData.date || new Date().toISOString(),
           note: newData.note ?? "",
-          portfolio_id: portfolioId  
+          portfolio_id: portfolioId,
         };
-
+    
         if (newData.mode === "update") {
           await db.execAsync(`
             DELETE FROM transactions
             WHERE asset_id = '${newData.id}' AND portfolio_id = '${portfolioId}';
           `);
+          await insertTransactions(txData);
+        } else {
+          await insertTransactions(txData);
         }
-
-        await insertTransactions(txToInsert);
-        await fetchPersonalCoinData(); 
+    
+        await fetchPersonalCoinData();
         await fetchPersonalStockData();
-
+    
         setHasInserted(true);
       } catch (err) {
-        console.error("Failed to insert newData:", err);
+        console.error("Failed to update asset:", err);
+      } finally {
+        setLoading(false);
       }
     };
-
-    doInsertAndFetch();
+    
+    doUpdateAsset();
   }, [newData, databaseExists, hasInserted]);
-
+  
+  
   const fetchAllStockData = async () => {
     try {
       setLoading(true);
@@ -263,7 +278,6 @@ export default function PortfolioScreen() {
         SELECT
           a.asset_id AS id,
           a.symbol,
-          a.name,
           IFNULL(SUM(t.quantity), 0) AS quantity
         FROM assets a
         LEFT JOIN transactions t ON a.asset_id = t.asset_id
@@ -290,7 +304,6 @@ export default function PortfolioScreen() {
       };
       const response = await fetch(url, options);
       const coinData = await response.json();
-      console.log("Coin data: ", coinData);
 
       const newPrices: Record<string, number> = {};
       const newIcons: Record<string, string> = {};
@@ -383,7 +396,7 @@ export default function PortfolioScreen() {
 
 const combinedHoldings = [
   ...holdings.map((h) => ({ ...h, type: "crypto" })),
-  ...stockHoldings.map((s) => ({ ...s, type: "stock" })),
+  ...stockHoldings.map((s) => ({ ...s, type: "stock" })), 
 ];
 
 
@@ -417,15 +430,15 @@ useEffect(() => {
   setPortfolioChange(pct);
 }, [combinedHoldings, highs, pastHighs]);
 
-useEffect(() => {
-  if (combinedHoldings.length) {
-    schedulePortfolioNotification({
-      totalValue,
-      portfolioChange,
-      holdings: combinedHoldings, 
-    });
-  }
-}, [combinedHoldings, portfolioChange]);
+// useEffect(() => {
+//   if (combinedHoldings.length) {
+//     schedulePortfolioNotification({
+//       totalValue,
+//       portfolioChange,
+//       holdings: combinedHoldings, 
+//     });
+//   }
+// }, [combinedHoldings, portfolioChange]);
 
 
 return (

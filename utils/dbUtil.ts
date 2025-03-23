@@ -38,9 +38,24 @@ export const setupDatabase = async () => {
       );
     `);
 
-    console.log("Setting up database complete");
   } catch (error) {
     console.error("Couldn't setup database", error);
+  }
+};
+
+export const updateTransaction = async (tx: any) => {
+  try {
+    await db.execAsync(`
+      UPDATE transactions 
+      SET quantity = ${tx.quantity},
+          price = ${tx.price ?? null},
+          date = '${tx.date ?? ""}',
+          note = '${tx.note ?? ""}'
+      WHERE tx_id = '${tx.tx_id}'
+    `);
+    console.log("Transaction successfully updated!");
+  } catch (error) {
+    console.error("Couldn't update transaction, error: ", error);
   }
 };
 
@@ -61,26 +76,36 @@ export const insertPortfolio = async (portfolio_id: string, name: string) => {
   
 
   export const insertAsset = async (
-    asset_id: string,
-    portfolio_id: string,
-    type: string,
-    symbol: string,
-    name: string
+    asset_id, portfolio_id, type, symbol
   ) => {
+    const assetType = type || "crypto";
     try {
-      await db.execAsync(`
-        INSERT INTO assets (asset_id, portfolio_id, type, symbol, name)
-        VALUES ('${asset_id}', '${portfolio_id}', '${type}', '${symbol}', '${name}')
-        ON CONFLICT(symbol, type, portfolio_id) DO UPDATE SET
-          name = EXCLUDED.name    
+      const result = await db.execAsync(`
+        UPDATE assets 
+        SET portfolio_id = '${portfolio_id}', 
+            type = '${assetType}', 
+            symbol = '${symbol}'
+        WHERE asset_id = '${asset_id}'
       `);
+      
+      if (!result || result.rowsAffected === 0) {
+        await db.execAsync(`
+          INSERT INTO assets (asset_id, portfolio_id, type, symbol)
+          VALUES ('${asset_id}', '${portfolio_id}', '${assetType}', '${symbol}')
+          ON CONFLICT(symbol, type, portfolio_id) DO UPDATE SET
+            asset_id = '${asset_id}'
+        `);
+      }
+      
       console.log("Asset inserted/updated successfully!");
     } catch (e) {
       console.error("Couldn't insert asset into DB, error: ", e);
     }
   };
-
-export const getAllTransactions = async () => {
+  
+  
+  
+  export const getAllTransactions = async () => {
     try {
         return await db.getAllAsync("SELECT * FROM transactions");
     } catch (error) {
@@ -90,9 +115,7 @@ export const getAllTransactions = async () => {
 }
 
 export const insertTransactions = async (tx: any | any[]) => {
-  console.log("portfolio id", tx.portfolio_id)
   let result = await db.getAllAsync("SELECT * FROM portfolios")
-  console.log("portfolio db stuff", result)
 
     try {
       if (Array.isArray(tx)) {

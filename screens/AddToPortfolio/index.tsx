@@ -65,6 +65,8 @@ export default function AddToPortfolioScreen() {
           onChangeNotesText: handleNotesTextChange
         }
       ];
+
+      console.log(selectedValue)
       
 
     return (

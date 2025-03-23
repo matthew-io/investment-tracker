@@ -89,11 +89,11 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
     const handleConfirm = async () => {
         setModalOpen(false);
         if (data.option === "Remove") {
-            const statement = `
-                DELETE FROM assets
-                WHERE asset_id = '${data.id}';
-            `;
-            await db.execAsync(statement);
+            // const statement = `
+            //     DELETE FROM assets
+            //     WHERE asset_id = '${data.id}';
+            // `;
+            // await db.execAsync(statement);
             navigation.navigate("Portfolio");
         }
         if (data.option === "changeCurrency") {

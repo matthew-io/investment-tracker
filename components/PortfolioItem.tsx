@@ -194,8 +194,6 @@ const currencySymbols: Record<string, string> = {
 
 
   export const PortfolioItem: React.FC<Props> = ({ data }) => {
-    console.log("port item data", data)
-
     const navigation = useNavigation();
     const { settings } = useContext(SettingsContext);
     const currencySymbol = currencySymbols[settings.currency] || "$";

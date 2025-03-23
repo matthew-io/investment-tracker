@@ -241,7 +241,7 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
                                   opacity: 1 
                                 }]}
                                 placeholder="Select..."
-                                data={coinData}
+                                data={stockData}
                                 search
                                 maxHeight={300}
                                 value={selectedValue}
