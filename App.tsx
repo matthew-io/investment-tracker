@@ -6,8 +6,9 @@ import AddToPortfolioScreen from "screens/AddToPortfolio";
 import SettingsScreen from "screens/Settings";
 import AssetInfoScreen from "screens/AssetInfoScreen";
 import ScannerScreen from "screens/Scanner";
+import AssetTransactionsScreen from 'screens/AssetTransactionScreen';
 
-// Import your provider
+
 import { SettingsProvider } from "./screens/Settings/settingsContext";
 import WalletDetailScreen from "screens/AddToPortfolioWallet";
 import EntryScreen from "screens/EntryScreen";
@@ -25,11 +26,13 @@ export default function App() {
               options={{ animation: "none" }}
               component={EntryScreen}
             />
+            
             <Stack.Screen
               name="Portfolio"
               options={{ animation: "none" }}
               component={PortfolioScreen}
             />
+           
             <Stack.Screen
               name="AddToPortfolio"
               options={{ animation: "none" }}
@@ -44,6 +47,9 @@ export default function App() {
               name="AssetInfoScreen"
               options={{ animation: "none" }}
               component={AssetInfoScreen}
+            />
+             <Stack.Screen name="AssetTransactions" component={AssetTransactionsScreen} 
+            options={{ animation: "none" }}
             />
             <Stack.Screen
               name="Scanner"

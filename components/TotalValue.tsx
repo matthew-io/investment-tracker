@@ -237,6 +237,10 @@ export const TotalValue: React.FC<Props> = ( {data, portfolioChange} ) => {
     >
                     <Ionicons name={ `${!settings.darkMode ? "moon" : "light-up"}` } color={`${settings.darkMode ? "white" : "black"}`} size={30} />
         </TouchableOpacity>
+        <TouchableOpacity
+    >
+                    <Ionicons name={"open-book"} size={30}color={`${settings.darkMode ? "white" : "black"}`} />
+        </TouchableOpacity>
       </View>
     </ImageBackground>
   );

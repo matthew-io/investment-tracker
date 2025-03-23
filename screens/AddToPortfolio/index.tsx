@@ -78,9 +78,9 @@ export default function AddToPortfolioScreen() {
                 })}
             </ScrollView>
             {selectedValue.ticker ? (
-                <AddToPortfolioConfirm data={{id: selectedValue._index, symbol: selectedValue.ticker, date: buyDate, notes: notes, amount: parseFloat(amountBought), type: "stock"}}/>
+                <AddToPortfolioConfirm data={{id: selectedValue._index, price: buyPrice, symbol: selectedValue.ticker, date: buyDate, notes: notes, amount: parseFloat(amountBought), type: "stock"}}/>
             ) : (
-                <AddToPortfolioConfirm data={{id: selectedValue.value, symbol: selectedValue.label, date: buyDate, notes: notes, amount: parseFloat(amountBought), type: "crypto"}}/>
+                <AddToPortfolioConfirm data={{id: selectedValue.value, price: buyPrice, symbol: selectedValue.label, date: buyDate, notes: notes, amount: parseFloat(amountBought), type: "crypto"}}/>
             )}
            
             <Navbar />

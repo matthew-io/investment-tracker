@@ -146,6 +146,7 @@ export default function PortfolioScreen() {
         const assetRows = await db.getAllAsync(`SELECT * FROM assets WHERE asset_id = '${newData.id}';`);
         console.log("Asset row after upsert:", assetRows);
 
+        console.log("New data: ", newData)
     
         const txData = {
           tx_id: `tx_${Date.now()}`,
@@ -153,7 +154,7 @@ export default function PortfolioScreen() {
           quantity: parseFloat(newData.amount),
           price: parseFloat(newData.price ?? 0),
           date: newData.date || new Date().toISOString(),
-          note: newData.note ?? "",
+          note: newData.notes ?? "",
           portfolio_id: portfolioId,
         };
     

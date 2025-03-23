@@ -20,7 +20,7 @@ export interface ItemData {
     type?: "toggle" | "remove" | "text" | "date" | "navigate" | "none";
     onChangeText?: (text: string) => void;
     onChangeDate?: (date: Date) => void;
-    onChangeNotesText?: (notes: string) => void;
+    onChangeNotesText?: (note: string) => void;
     textValue?: string;
     noteValue?: string;
     id?: string;

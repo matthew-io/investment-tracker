@@ -35,7 +35,7 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
     }, [data.noteValue, data.option]);
 
     useEffect(() => {
-        if (data.option === "Enable" || data.option === "Remove" || data.option === "changeCurrency" || data.option === "enableFaceId") {
+        if (data.option === "Enable" || data.option === "Remove" || data.option === "changeCurrency" || data.option === "enableFaceId" || data.option=="newPage" || data.option == "enableAISummaries" || data.option == "changeNotes") {
             setHasButton(true);
         } else {
             setHasButton(false);
@@ -65,7 +65,7 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
               value={data.textValue}
             />
         );
-    } else if (data.option === "Enable" || data.option === "Remove" || data.option === "changeCurrency" || data.option === "enableFaceId") {
+    } else if (data.option === "Enable" || data.option === "Remove" || data.option === "changeCurrency" || data.option === "enableFaceId" || data.option == "newPage" || data.option == "enableAISummaries" || data.option == "changeNotes") {
         rightComponent = <Ionicons name="chevron-right" color="white" size={24} />;
     } else if (data.option === "EnterDate") {
         rightComponent = (
@@ -87,9 +87,20 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
     }
 
     const handleConfirm = async () => {
+        if (data.option === "changeNotes") {
+            console.log("Committing note:", notesText);
+            try {
+                await data.onChangeNotesText?.(notesText);
+                console.log("Note update completed");
+            } catch (error) {
+                console.error("Error updating note:", error);
+            }
+        }
+        
+    
         setModalOpen(false);
+    
         if (data.option === "Remove") {
-            
             const statement = `
                 DELETE FROM assets
                 WHERE asset_id = '${data.id}';
@@ -98,28 +109,30 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
                 await db.execAsync(`
                     DELETE FROM transactions
                     WHERE asset_id = '${data.id}';
-                  `);
+                `);
                 await db.execAsync(statement);
             } catch (error) {
-                console.error(error)
+                console.error(error);
             }
             navigation.navigate("Portfolio");
         }
+    
         if (data.option === "changeCurrency") {
             const newSettings = { ...settings, currency: selectedCurrency };
             await saveSettings(newSettings);
         }
+    
         if (data.option === "enableFaceId") {
-            if (settings.faceIdEnabled) {
-                const newSettings = { ...settings, faceIdEnabled: false };
-                await saveSettings(newSettings);
-            } else {
-                const newSettings = { ...settings, faceIdEnabled: true };
-                await saveSettings(newSettings);
-            }
+            const newSettings = { ...settings, faceIdEnabled: !settings.faceIdEnabled };
+            await saveSettings(newSettings);
+        }
+    
+        if (data.option === "enableAISummaries") {
+            const newSettings = { ...settings, enableAISummaries: !settings.enableAISummaries };
+            await saveSettings(newSettings);
         }
     };
-
+    
     const renderModalContent = () => {
         if (data.option === "changeCurrency") {
             return (
@@ -153,11 +166,18 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
             );
         } else if (data.option === "enableFaceId") {
             return (
-                <Text style={[styles.modalText, { color: textColor }]}>
+                <Text className={`${textColor}`} style={styles.modalText}>
                     {settings.faceIdEnabled ? "Confirm disabling FaceID" : "Confirm enabling FaceID"}
                 </Text>
             );
-        } else if (data.option !== "Remove") {
+        } else if (data.option === "enableAISummaries") {
+            return (
+                <Text className={`${textColor}`} style={styles.modalText}>
+                    {settings.faceIdEnabled ? "Confirm disabling AI summaries" : "Confirm enabling AI summaries"}
+                </Text>
+            );
+        
+        } else if (data.option == "changeNotes") {
             return (
                 <TextInput
                     className="w-72"
@@ -172,18 +192,32 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
                     textAlignVertical="top"
                     onChangeText={(text) => {
                         setNotesText(text);
-                        data.onChangeNotesText?.(text);
                     }}
                     value={notesText}
                 />
             );
-        }
+        } 
+
+
         return null;
     };
 
+    // <TouchableOpacity onPress={() => {
+    //     navigation.navigate("AssetTransactions", {
+    //         assetId: data.id
+    //     })
+    //    }} >
+
     if (hasButton) {
         return (
-            <TouchableOpacity onPress={() => setModalOpen(true)}>
+            <TouchableOpacity onPress={() => {
+                if (data.option === "newPage") {
+                  navigation.navigate("AssetTransactions", { assetId: data.id }); 
+                } else {
+                  setModalOpen(true);
+                }
+              }}>
+              
                 <Modal
                     animationType="fade"
                     transparent={true}

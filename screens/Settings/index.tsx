@@ -29,7 +29,7 @@ export default function SettingsScreen() {
         {
             header: "Enable AI Portfolio Summaries",
             description: "Enabling AI portfolio summaries to give a more detailed analysis of the recent state of your portfolio.",
-            option: "Enable",
+            option: "enableAISummaries",
             type: "toggle"
         },
         {

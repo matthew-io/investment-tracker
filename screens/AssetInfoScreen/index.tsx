@@ -4,8 +4,9 @@ import { Navbar } from "components/Navbar";
 import { OptionComponent } from "components/OptionComponent";
 import { ScreenHeader } from "components/ScreenHeader";
 import { View, Text } from "react-native";
-import { useContext, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { SettingsContext } from "screens/Settings/settingsContext";
+import { db } from "database";
 
 export default function AssetInfoScreen() {
     const route = useRoute();
@@ -16,8 +17,20 @@ export default function AssetInfoScreen() {
     const [note, setNote] = useState(assetData.note);
     const [amount, setAmount] = useState(assetData.amount ? assetData.amount.toString() : "")
 
+    const test= async () => {
+        let statement = `
+        SELECT * FROM transactions`
+        let result = await db.getAllAsync(statement)
+        console.log("result: ", result)
+    };
+
+    useEffect(() => {
+        test();
+    }, [])
+
     const textColor = settings.darkMode ? "text-white" : "text-black"
     const bgColor = settings.darkMode ? "bg-brand-gray" : "bg-brand-white"
+
 
     const assetOptions = [
         {
@@ -28,11 +41,10 @@ export default function AssetInfoScreen() {
             onChangeText: (newAmount) => setAmount(newAmount)
         },
         {
-            header: "Edit Notes",
-            description: "Edit transaction notes",
-            option: "Enable",
-            noteValue: note,
-            onChangeNotesText: (updatedNote: any) => setNote(updatedNote),
+            header: "Full Transaction List",
+            description: `View all ${assetData.symbol.toUpperCase()} transactions`,
+            option: "newPage",
+            id: assetData.id
         },
         {
             header: "Remove asset",
