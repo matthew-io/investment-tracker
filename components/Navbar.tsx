@@ -88,7 +88,13 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
             >
               <BlurView intensity={5} style={styles.blurBackground}>
                 <View style={styles.centeredView}>
-                  <View style={styles.modalView} className={`${settings.darkMode ? "bg-[#2c2c2c]" : "bg-brand-white"}`}> 
+                  <View className={`${settings.darkMode ? "bg-brand-gray" : "bg-brand-white"} w-[85%] p-6 rounded-xl`} style={{
+                    shadowColor: "#fff",
+                    shadowOffset: { width:0, height: 0 },
+                    shadowOpacity: 0.5,
+                    shadowRadius: 5,
+                    elevation: 15,
+                  }}> 
 
                     {assetType === "" && (
                       <>
@@ -119,7 +125,7 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
                         </View>
 
                         <TouchableOpacity
-                          className="p-4 bg-red-900 mt-8 rounded-[12px]"
+                          className="p-4 bg-red-900 mt-8 rounded-[12px] w-1/3 self-center" 
                           onPress={handleCancel}
                         >
                           <Text className="text-white">Cancel</Text>
@@ -156,7 +162,7 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
                         </TouchableOpacity>
                         </View>
                         <TouchableOpacity
-                          className="p-4 bg-red-900 mt-8 rounded-[12px]"
+                          className="p-4 bg-red-900 mt-8 rounded-[12px] w-1/3 self-center"
                           onPress={handleCancel}
                         >
                           <Text className="text-white">Cancel</Text>
@@ -179,7 +185,7 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
                           }]}
                           containerStyle={[styles.dropdownList, { 
                             backgroundColor: settings.darkMode ? '#2c2c2c' : 'white',
-                            opacity: 1
+                            opacity: 1,
                           }]}
                           placeholder="Select..."
                           data={coinData}
@@ -212,7 +218,7 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
                         />
                  
                        <TouchableOpacity
-                          className="p-4 bg-red-500 mt-4 rounded-[12px]"
+                          className="p-4 bg-red-500 mt-4 rounded-[12px] w-1/3 self-center"
                           onPress={() => {
                             setModalVisible(false);
                             setTimeout(() => {
@@ -271,7 +277,7 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
                                 valueField="label"
                               />
                         <TouchableOpacity
-                          className="p-4 bg-red-500 mt-4 rounded-[12px]"
+                          className="p-4 bg-red-500 mt-4 rounded-[12px] self-center w-1/3"
                           onPress={handleCancel}
                         >
                           <Text className="text-white">Cancel</Text>
@@ -315,22 +321,6 @@ const styles = StyleSheet.create({
   centeredView: {
     flex: 1,
     justifyContent: 'center',
-  },
-  modalView: {
-    margin: 20,
-    // borderColor: 'white',
-    borderWidth: 0.5,
-    borderRadius: 20,
-    padding: 35,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
   },
   button: {
     borderRadius: 20,

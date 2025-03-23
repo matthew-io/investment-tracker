@@ -6,6 +6,7 @@ import { ImageBackground } from "react-native";
 import { SettingsContext } from "screens/Settings/settingsContext";
 import { BlurView } from "expo-blur";
 import { SelectList } from 'react-native-dropdown-select-list'
+import * as LocalAuthentication from "expo-local-authentication";
 
 
 export default function EntryScreen() {
@@ -21,11 +22,27 @@ export default function EntryScreen() {
     fetchPortfolios();
   }, []);
 
+  const handleEnter = async () => {
+    if (settings.faceIdEnabled) {
+      const result = await LocalAuthentication.authenticateAsync({
+        promptMessage: "Authenticate with Face ID",
+        fallbackLabel: "Enter Passcode",
+      });
+      if (result.success) {
+        navigation.navigate("Portfolio");
+      } else {
+        Alert.alert("Authentication failed", "Face ID authentication was not successful.");
+      }
+    } else {
+      navigation.navigate("Portfolio");
+    }
+  };
+
   const handleSelectPortfolio = (portfolioId: string) => {
     const newSettings = { ...settings, currentPortfolioId: portfolioId };
     saveSettings(newSettings);
     setOpenPortfolioModal(false);
-    navigation.navigate("Portfolio");
+    handleEnter()
   };
 
   const fetchPortfolios = async () => {
@@ -66,7 +83,7 @@ export default function EntryScreen() {
       fetchPortfolios();
       const newSettings = { ...settings, currentPortfolioId: portfolioId };
       saveSettings(newSettings);
-      navigation.navigate("Portfolio");
+      handleEnter();
     } catch (error) {
       console.error("Couldn't create portfolio, error: ", error);
     }
@@ -92,13 +109,6 @@ export default function EntryScreen() {
         <Text className="text-white text-center text-2xl">Enter</Text>
       </TouchableOpacity>
 
-{/* 
-        <TouchableOpacity
-          onPress={() => setCreatePortfolioModal(true)}
-          className="bg-green-500 py-3 mt-4 rounded-lg"
-        >
-          <Text className="text-white text-center text-2xl">Create New Portfolio</Text>
-        </TouchableOpacity> */}
       </View>
 
       <Modal visible={openPortfolioModal} transparent={true}>

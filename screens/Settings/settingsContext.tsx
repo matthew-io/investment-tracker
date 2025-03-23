@@ -30,6 +30,8 @@ export const SettingsContext = createContext<SettingsContextType>({
   saveSettings: async () => {},
 });
 
+
+
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [settings, setSettings] = useState<Settings>(defaultSettings);
   const STORAGE_KEY = '@myapp_settings';

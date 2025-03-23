@@ -89,11 +89,20 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
     const handleConfirm = async () => {
         setModalOpen(false);
         if (data.option === "Remove") {
-            // const statement = `
-            //     DELETE FROM assets
-            //     WHERE asset_id = '${data.id}';
-            // `;
-            // await db.execAsync(statement);
+            
+            const statement = `
+                DELETE FROM assets
+                WHERE asset_id = '${data.id}';
+            `;
+            try {
+                await db.execAsync(`
+                    DELETE FROM transactions
+                    WHERE asset_id = '${data.id}';
+                  `);
+                await db.execAsync(statement);
+            } catch (error) {
+                console.error(error)
+            }
             navigation.navigate("Portfolio");
         }
         if (data.option === "changeCurrency") {
@@ -115,7 +124,7 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
         if (data.option === "changeCurrency") {
             return (
                 <>
-                    <Text style={styles.modalText}>{modalText}</Text>
+                    <Text className={`${textColor} mb-4`}>{modalText}</Text>
                     {currencies.length === 0 ? (
                         <ActivityIndicator color="white" />
                     ) : (
