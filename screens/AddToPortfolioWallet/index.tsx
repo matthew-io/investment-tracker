@@ -5,7 +5,8 @@ import { ETHERSCAN_API_Key } from "@env";
 import { ScreenHeader } from "components/ScreenHeader";
 import { AddToPortfolioConfirm } from "components/AddToPortfolioConfirm";
 import { utils } from "ethers";
-
+import { Navbar } from "components/Navbar";
+import { OptionComponent } from "components/OptionComponent";
 export default function WalletDetailScreen() {
   const route = useRoute();
   const { walletInfo } = route.params as { walletInfo: { type: string; address: string } };
@@ -13,6 +14,7 @@ export default function WalletDetailScreen() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
     const fetchWalletData = async () => {
       try {
         if (walletInfo.type === "ethereum") {
@@ -38,17 +40,43 @@ export default function WalletDetailScreen() {
     fetchWalletData();
   }, [walletInfo]);
 
-  if (loading) {
+  if (loading || !walletData) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <View className="flex-1 justify-center items-center">
         <ActivityIndicator size="large" />
       </View>
     );
   }
 
+  const options = [
+    {
+      header: `Amount Held (${walletInfo.type === "bitcoin" ? "BTC" : "ETH"})`,
+      description: "Amount held in scanned wallet",
+      option: "EnterText",
+      textValue:
+        walletInfo.type === "bitcoin"
+          ? (walletData.balance / 1e8).toFixed(8)
+          : walletData.result
+            ? utils.formatEther(walletData.result)
+            : "",
+    },
+  ];
+
   return (
-    <View style={{ flex: 1, backgroundColor: "#f0f0f0" }}>
-      <ScreenHeader data={walletInfo.address} />
+    <View className="flex-1 h-full bg-brand-gray">
+      <ScreenHeader
+        data={`Wallet: ${walletInfo.address.slice(0, 3)}...${walletInfo.address.slice(-3)}`}
+        image={
+          walletInfo.type === "bitcoin"
+            ? "https://cryptologos.cc/logos/bitcoin-btc-logo.png"
+            : "https://www.iconarchive.com/download/i109534/cjdowner/cryptocurrency-flat/Ethereum-ETH.1024.png"
+        }
+      />
+
+      {options.map((option) => (
+        <OptionComponent key={option.header} data={option} />
+      ))}
+
       {walletInfo.type === "ethereum" && walletData?.result ? (
         <AddToPortfolioConfirm
           data={{
@@ -59,9 +87,23 @@ export default function WalletDetailScreen() {
             type: "crypto",
           }}
         />
+      ) : walletInfo.type === "bitcoin" && walletData?.balance ? (
+        <AddToPortfolioConfirm
+          data={{
+            id: "bitcoin",
+            symbol: "btc",
+            date: Date.now(),
+            amount: (walletData.balance / 1e8).toFixed(8),
+            type: "crypto",
+          }}
+        />
       ) : (
-        <Text>Bitcoin wallet or unsupported type</Text>
+        <Text className="text-center text-red-500 mt-6">
+          Unsupported wallet type or failed to load data.
+        </Text>
       )}
+
+      <Navbar />
     </View>
   );
 }

@@ -16,6 +16,8 @@ export const ScreenHeader: React.FC<Props> = ({ data, image }) => {
   const splashBgLight = require("../assets/totalvaluebglight.png");
   const selectedBg = settings.darkMode ? splashBg : splashBgLight;
 
+  let showCurrency = data.length > 6 ? `${data}` : `${data}/${settings.currency}`
+
   return (
       <ImageBackground
         source={selectedBg}
@@ -36,7 +38,7 @@ export const ScreenHeader: React.FC<Props> = ({ data, image }) => {
       )}
     
         <Text className={`${textColor} ml-4 font-bold text-4xl mt-12`}>
-          {`${data}/${settings.currency}`}
+          {showCurrency}
         </Text>
     </ImageBackground>
   );

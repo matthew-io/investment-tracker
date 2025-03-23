@@ -2,6 +2,7 @@ import { useNavigation } from "@react-navigation/native";
 import { CameraView } from "expo-camera";
 import React from "react";
 import { SafeAreaView, Text, View } from "react-native";
+import { Overlay } from "./Overlay";
 
 export default function ScannerScreen() {
 const navigation = useNavigation();
@@ -29,14 +30,16 @@ const handleQrCodeScanner = (barcode: any) => {
 };
 
   return (
-   <SafeAreaView style={{ flex: 1 }}>
+   <SafeAreaView style={{ flex: 1 }} >
     <CameraView 
   onBarcodeScanned={(barcode) => {
     handleQrCodeScanner(barcode);
   }}
   facing="back"
+  className="h-full"
   style={{ flex: 1 }}
 />
+    <Overlay />
    </SafeAreaView>
   )
 }

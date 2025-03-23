@@ -5,7 +5,6 @@ import { useContext, useEffect, useState } from "react";
 import { ImageBackground } from "react-native";
 import { SettingsContext } from "screens/Settings/settingsContext";
 import { BlurView } from "expo-blur";
-import { Dropdown } from "react-native-element-dropdown";
 import { SelectList } from 'react-native-dropdown-select-list'
 
 
