@@ -44,23 +44,35 @@ export default function EntryScreen() {
       alert("Portfolio name cannot be empty.");
       return;
     }
-
-    const portfolioId = Date.now().toString(); 
+  
     try {
+      const existing = await db.getFirstAsync(
+        "SELECT * FROM portfolios WHERE name = ?",
+        [newPortfolioName.trim()]
+      );
+  
+      if (existing) {
+        alert("A portfolio with that name already exists.");
+        return;
+      }
+  
+      const portfolioId = Date.now().toString();
       await db.execAsync(`
         INSERT INTO portfolios (portfolio_id, name)
         VALUES ('${portfolioId}', '${newPortfolioName}')
       `);
-      setNewPortfolioName(""); 
-      setCreatePortfolioModal(false); 
-      fetchPortfolios(); 
+  
+      setNewPortfolioName("");
+      setCreatePortfolioModal(false);
+      fetchPortfolios();
       const newSettings = { ...settings, currentPortfolioId: portfolioId };
       saveSettings(newSettings);
-      navigation.navigate("Portfolio")
+      navigation.navigate("Portfolio");
     } catch (error) {
       console.error("Couldn't create portfolio, error: ", error);
     }
   };
+  
 
 
   return (
