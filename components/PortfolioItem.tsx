@@ -210,14 +210,16 @@ const currencySymbols: Record<string, string> = {
       maximumFractionDigits: 2,
       minimumFractionDigits: 2 
     });
-  
+
+    
     const changeComponent = (
       <Text
         className={`ml-[1vw] text-sm ${
-          change || data.change24h < 0 ? "text-red-500" : "text-green-500"
+          (change < 0 || data.change24h < 0)
+ ? "text-red-500" : "text-green-500"
         }`}
       >
-        {`${ data.type == "crypto" ? formattedChange : (data.change24h).toLocaleString()}% from 24h ago`}
+        {`${ data.type == "crypto" ? formattedChange :  (data.change24h).toLocaleString()}% from 24h ago`}
       </Text>
     );
   

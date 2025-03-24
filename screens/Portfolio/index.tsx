@@ -20,6 +20,7 @@ export default function PortfolioScreen() {
   const route = useRoute();
   const { settings } = useContext(SettingsContext);
   const userCurrency = settings.currency;
+  
 
   const portfolioId = settings.currentPortfolioId; 
   const newData = route.params?.data;
@@ -38,6 +39,14 @@ export default function PortfolioScreen() {
   const [conversionRates, setConversionRates] = useState<Record<string, number>>({});
   const [pastHighs, setPastHighs] = useState<Record<string, number>>({});
   const [portfolioChange, setPortfolioChange] = useState(0);
+  const [lastCoinFetch, setLastCoinFetch] = useState<number | null>(null);
+  const [lastStockFetch, setLastStockFetch] = useState<number | null>(null);
+  const [lastPersonalCoinFetch, setLastPersonalCoinFetch] = useState<Record<string, number>>({});
+  const [lastPersonalStockFetch, setLastPersonalStockFetch] = useState<Record<string, number>>({});
+  const [lastNotifiedAt, setLastNotifiedAt] = useState<number | null>(null);
+  const [cryptoLoaded, setCryptoLoaded] = useState(false);
+  const [stocksLoaded, setStocksLoaded] = useState(false);
+  const [priceChanges, setPriceChanges] = useState<Record<string, number>>({});
 
   const textColor = settings.darkMode ? "text-white" : "text-black"
   const bgColor = settings.darkMode ? "bg-brand-gray" : "bg-brand-white"
@@ -119,6 +128,8 @@ export default function PortfolioScreen() {
 
   useEffect(() => {
     if (databaseExists) {
+      setCryptoLoaded(false);
+      setStocksLoaded(false);
       fetchPersonalCoinData();
       fetchPersonalStockData();
     }
@@ -184,6 +195,12 @@ export default function PortfolioScreen() {
   
   
   const fetchAllStockData = async () => {
+    const now = Date.now();
+    if (lastStockFetch && now - lastStockFetch < 60 * 1000) {
+      console.log("Using cached stock data");
+      return;
+    }
+  
     try {
       setLoading(true);
       const data = await rest.stocks.aggregatesGroupedDaily("2025-03-20", {
@@ -193,13 +210,14 @@ export default function PortfolioScreen() {
       const sortedData = data.results.sort((a, b) => b.v - a.v);
       const top1000ByVolume = sortedData.slice(0, 1000);
       setAllStockData(top1000ByVolume);
+      setLastStockFetch(now); 
     } catch (err) {
-      console.error("Couldn't fetch stock data, error: ", err.message);
+      console.error("Stock API rate limit", err.message);
     } finally {
       setLoading(false);
     }
   };
-
+  
   const computeGainersAndLosers = (holdings) => {
     if (!holdings.length) return { biggestGainer: null, biggestLoser: null };
     const sorted = [...holdings].sort((a, b) => (b.high24h || 0) - (a.high24h || 0));
@@ -214,6 +232,7 @@ export default function PortfolioScreen() {
     portfolioChange,
     holdings,
   }) => {
+    console.log("combined holdings 2: ", holdings)
     const { biggestGainer, biggestLoser } = computeGainersAndLosers(holdings);
 
     const { status } = await Notifications.getPermissionsAsync();
@@ -251,6 +270,12 @@ export default function PortfolioScreen() {
   }
 
   const fetchAllCoinData = async () => {
+    const now = Date.now();
+    if (lastCoinFetch && now - lastCoinFetch < 60 * 1000) {
+      console.log("Using cached coin data");
+      return;
+    }
+  
     try {
       setLoading(true);
       const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=${userCurrency}&order=market_cap_desc`;
@@ -264,14 +289,21 @@ export default function PortfolioScreen() {
       const response = await fetch(url, options);
       let coinData = await response.json();
       setAllCoinData(coinData);
+      setLastCoinFetch(now);
     } catch (e) {
       console.error("Couldn't fetch all coin data, error: ", e);
     } finally {
       setLoading(false);
     }
   };
-
+  
   const fetchPersonalCoinData = async () => {
+    const now = Date.now();
+    if (lastPersonalCoinFetch[portfolioId] && now - lastPersonalCoinFetch[portfolioId] < 60 * 1000) {
+      console.log("Using cached personal coin data");
+      return;
+    }
+  
     try {
       setLoading(true);
   
@@ -286,7 +318,6 @@ export default function PortfolioScreen() {
         GROUP BY a.asset_id;
       `;
       const dbData = await db.getAllAsync(query);
-      console.log("DB data:", dbData);
   
       if (!dbData || dbData.length === 0) {
         console.log("No crypto holdings found in database.");
@@ -305,20 +336,24 @@ export default function PortfolioScreen() {
       };
       const response = await fetch(url, options);
       const coinData = await response.json();
-
+  
       const newPrices: Record<string, number> = {};
       const newIcons: Record<string, string> = {};
       const newHighs: Record<string, number> = {};  
+  
+      const newChanges: Record<string, number> = {};
 
       coinData.forEach((coin: any) => {
         const match = dbData.find((row) => row.id === coin.id);
         if (match) {
           newPrices[coin.id] = coin.current_price;
           newIcons[coin.id] = coin.image;
-          newHighs[coin.id] = coin.high_24h;  
+          newHighs[coin.id] = coin.high_24h;
+          newChanges[coin.id] = coin.price_change_percentage_24h_in_currency ?? 0;
         }
       });
-  
+
+      setPriceChanges(newChanges);
       setPrices(newPrices);
       setIcons(newIcons);
       setHighs(newHighs);  
@@ -330,16 +365,29 @@ export default function PortfolioScreen() {
         quantity: parseFloat(row.quantity),
       }));
       setHoldings(newHoldings);
+  
+      setLastPersonalCoinFetch(prev => ({
+        ...prev,
+        [portfolioId]: now,
+      }));
     } catch (error) {
       console.log("Failed to fetch coin data:", error);
     } finally {
+      setCryptoLoaded(true);
       setLoading(false);
     }
   };
-
+  
   const fetchPersonalStockData = async () => {
+    const now = Date.now();
+    if (lastPersonalStockFetch[portfolioId] && now - lastPersonalStockFetch[portfolioId] < 60 * 1000) {
+      console.log("Using cached personal stock data");
+      return;
+    }
+  
     try {
       setLoading(true);
+  
       const query = `
         SELECT
           a.asset_id AS id,
@@ -352,20 +400,18 @@ export default function PortfolioScreen() {
         GROUP BY a.asset_id;
       `;
       const dbData = await db.getAllAsync(query);
+  
       if (!dbData || dbData.length === 0) {
         setStockHoldings([]);
         return;
       }
   
-      dbData.map((item) => {
+      dbData.forEach((item) => {
         setTimeout(() => {
-          rest.stocks.previousClose(
-            item.symbol,
-            { adjusted: "true" }
-          ).then((data) => {
+          rest.stocks.previousClose(item.symbol, { adjusted: "true" }).then((data) => {
             if (data.results && data.results.length > 0) {
               const pastHigh = data.results[0].h;
-              setPastHighs(prev => ({ ...prev, [item.symbol]: pastHigh }));
+              setPastHighs((prev) => ({ ...prev, [item.symbol]: pastHigh }));
             }
           });
         }, 100);
@@ -378,13 +424,19 @@ export default function PortfolioScreen() {
         quantity: parseFloat(row.quantity),
       }));
       setStockHoldings(newHoldings);
+  
+      setLastPersonalStockFetch(prev => ({
+        ...prev,
+        [portfolioId]: now,
+      }));
     } catch (error) {
       console.error("Failed to fetch personal stock data:", error);
     } finally {
+      setStocksLoaded(true);
       setLoading(false);
     }
   };
-  
+    
   const getPrice = (item: any): number => {
     if (item.type === "crypto") {
       return prices[item.id] ?? 0;
@@ -402,7 +454,7 @@ const combinedHoldings = [
 
 
 useEffect(() => {
-  if (!combinedHoldings.length) {
+  if (!cryptoLoaded || !stocksLoaded || !combinedHoldings.length) {
     setPortfolioChange(0);
     return;
   }
@@ -414,32 +466,42 @@ useEffect(() => {
     const todayPrice = getPrice(asset);
     totalNow += todayPrice * asset.quantity;
 
-    let yesterdayPrice = 0;
-    if (asset.type === "stock") {
-      yesterdayPrice = pastHighs[asset.symbol] ?? 0;
+    if (asset.type === "crypto") {
+      const changePct = priceChanges[asset.id] ?? 0;
+      const past = todayPrice / (1 + changePct / 100);
+      totalPast += past * asset.quantity;
     } else {
-      yesterdayPrice = highs[asset.id] ?? 0;
+      const yesterdayPrice = pastHighs[asset.symbol] ?? 0;
+      totalPast += yesterdayPrice * asset.quantity;
     }
-    totalPast += yesterdayPrice * asset.quantity;
   }
 
-  const pct =
-    totalPast > 0
-      ? ((totalNow - totalPast) / totalPast) * 100
-      : 0;
-
+  const pct = totalPast > 0 ? ((totalNow - totalPast) / totalPast) * 100 : 0;
   setPortfolioChange(pct);
-}, [combinedHoldings, highs, pastHighs]);
+}, [combinedHoldings, highs, pastHighs, cryptoLoaded, stocksLoaded]);
 
-// useEffect(() => {
-//   if (combinedHoldings.length) {
-//     schedulePortfolioNotification({
-//       totalValue,
-//       portfolioChange,
-//       holdings: combinedHoldings, 
-//     });
-//   }
-// }, [combinedHoldings, portfolioChange]);
+const NOTIFY_INTERVAL_MS = 6 * 60 * 60 * 1000; 
+
+useEffect(() => {
+  const now = Date.now();
+
+  const ready = cryptoLoaded && stocksLoaded && combinedHoldings.length > 0;
+
+  if (
+    ready &&
+    (!lastNotifiedAt || now - lastNotifiedAt > NOTIFY_INTERVAL_MS)
+  ) {
+    schedulePortfolioNotification({
+      totalValue,
+      portfolioChange,
+      holdings: combinedHoldings,
+    });
+
+    setLastNotifiedAt(now);
+  }
+}, [combinedHoldings, portfolioChange, cryptoLoaded, stocksLoaded]);
+
+
 
 
 return (
