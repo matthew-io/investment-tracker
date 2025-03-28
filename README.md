@@ -17,7 +17,7 @@ You will also need 3 API keys (4, if you want to test AI generated portfolio sum
 The three API key's you need are a [Coingecko API Key](https://www.coingecko.com/en/api), a [Polygon IO API Key](https://polygon.io/) and a [Etherscan API Key](https://etherscan.io/apis).
 If you wish to opt into AI generated portfolio summaries, you'll also need an [OpenAI API Key](https://platform.openai.com/api-keys)
 
-Once you have the require API keys, you'll need to create a dotenv that follows this format:
+Once you have the required API keys, you'll need to create a dotenv that follows this format:
 ``
 COINGECKO_API_KEY=MY_API_KEY
 POLYGON_IO_API_KEY=MY_API_KEY
