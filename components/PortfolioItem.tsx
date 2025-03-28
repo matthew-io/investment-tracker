@@ -201,27 +201,20 @@ const currencySymbols: Record<string, string> = {
     const textColor = settings.darkMode ? "text-white" : "text-black"
     const bgColor = settings.darkMode ? "bg-brand-gray" : "bg-brand-gray"
   
-    let change = 0;
-    if (data.high24h && data.high24h > 0) {
-      change = ((data.priceUsd / data.high24h) * 100) - 100;
-    } 
+    const change = data.change24h ?? 0;
+const formattedChange = change.toLocaleString(undefined, { 
+  maximumFractionDigits: 2,
+  minimumFractionDigits: 2 
+});
 
-    const formattedChange = change.toLocaleString(undefined, { 
-      maximumFractionDigits: 2,
-      minimumFractionDigits: 2 
-    });
+const changeComponent = (
+  <Text
+    className={`ml-[1vw] text-sm ${change < 0 ? "text-red-500" : "text-green-500"}`}
+  >
+    {`${formattedChange}% from 24h ago`}
+  </Text>
+);
 
-    
-    const changeComponent = (
-      <Text
-        className={`ml-[1vw] text-sm ${
-          (change < 0 || data.change24h < 0)
- ? "text-red-500" : "text-green-500"
-        }`}
-      >
-        {`${ data.type == "crypto" ? formattedChange :  (data.change24h).toLocaleString()}% from 24h ago`}
-      </Text>
-    );
   
     const totalAmount = data.quantity * data.priceUsd;
     const formattedTotal = totalAmount.toLocaleString(undefined, {

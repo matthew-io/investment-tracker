@@ -138,30 +138,27 @@ export const Navbar: React.FC<Props> = ({ coin, stock }) => {
                         <Text style={styles.modalText} className={`${textColor}`}>
                           How would you like to add your crypto?
                         </Text>
-                        <View className="flex-row items-center mt-4">
-                          <TouchableOpacity
-                            onPress={() => setCryptoEntryMethod("manual")}
-                          >
-                            <View className="border-[1px] rounded-[12px] px-12 py-12 justify-center border-white mx-2">
-                              <Text className={`${textColor} text-md`}>Manually</Text>
-                            </View>
-                          </TouchableOpacity>
+                        <View className="flex-row items-center mt-4 justify-center">
+                  <TouchableOpacity onPress={() => setCryptoEntryMethod("manual")}>
+                    <View className="border-[1px] rounded-[12px] px-6 py-4 justify-center items-center border-white mx-2 w-32 h-16">
+                      <Text className={`${textColor} text-md`}>Manually</Text>
+                    </View>
+                  </TouchableOpacity>
 
-                          <TouchableOpacity
-                              onPress={() => {
-                                if (permission) {
-                                  navigation.navigate("Scanner");
-                                } else {
-                                  requestPermission();
-                                }
-                              }}
-                            >
-                          <View className="border-[1px] rounded-[12px] px-12 py-12 border-white mx-2">
-                            <Text className={`${textColor} text-md`}>Scan</Text>
-                          </View>
-                        </TouchableOpacity>
-                        </View>
-                        <TouchableOpacity
+                  <TouchableOpacity
+                    onPress={() => {
+                      if (permission) {
+                        navigation.navigate("Scanner");
+                      } else {
+                        requestPermission();
+                      }
+                    }}
+                  >
+                    <View className="border-[1px] rounded-[12px] px-6 py-4 justify-center items-center border-white mx-2 w-32 h-16">
+                      <Text className={`${textColor} text-md`}>Scan</Text>
+                    </View>
+                  </TouchableOpacity>
+                </View>                        <TouchableOpacity
                           className="p-4 bg-red-900 mt-8 rounded-[12px] w-1/3 self-center"
                           onPress={handleCancel}
                         >

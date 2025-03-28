@@ -27,7 +27,7 @@ export default function SettingsScreen() {
             type: "toggle"
         },
         {
-            header: "Enable AI Portfolio Summaries",
+            header: `${!settings.enableAISummaries ? 'Enable AI Portfolio Summaries' : 'Disable AI Portfolio Summaries'}`,
             description: "Enabling AI portfolio summaries to give a more detailed analysis of the recent state of your portfolio.",
             option: "enableAISummaries",
             type: "toggle"
@@ -35,14 +35,14 @@ export default function SettingsScreen() {
         {
             header: "Summary Frequency",
             description: "Set how often you would like to receive portfolio summaries.",
-            option: "Enable"
+            option: "setSummaryFrequency"
         },
-        {
-            header: "Export Portfolio Data",
-            description: "Export your portfolio data in JSON format.",
-            option: "Enable",
+        // {
+        //     header: "Export Portfolio Data",
+        //     description: "Export your portfolio data in JSON format.",
+        //     option: "Enable",
 
-        }
+        // }
     ]
     
     return (

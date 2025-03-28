@@ -5,11 +5,14 @@ import { SettingsContext } from "screens/Settings/settingsContext";
 import { useContext } from "react";
 import Ionicons from "@expo/vector-icons/Entypo";
 import { opacity } from "react-native-reanimated/lib/typescript/Colors";
+import { useNavigation } from "@react-navigation/native";
 
 type Props = {
   data: number;
   portfolioChange: number;
+  holdings: ItemData[];
 };
+
 
 // this list of currency symbols was AI generated: https://chatgpt.com/share/67dc1cab-684c-8005-8d7f-50c8d9994408
 
@@ -197,9 +200,10 @@ const currencySymbols: Record<string, string> = {
 };
 
 
-export const TotalValue: React.FC<Props> = ( {data, portfolioChange} ) => {
+export const TotalValue: React.FC<Props> = ( {data, portfolioChange, holdings} ) => {
   const { settings, saveSettings } = useContext(SettingsContext);
   const currencySymbol = currencySymbols[settings.currency] || "$";
+  const navigation = useNavigation();
 
   const textColor = settings.darkMode ? "text-white" : "text-black"
   const bgColor = settings.darkMode ? "bg-brand-gray" : "bg-brand-white"
@@ -237,10 +241,20 @@ export const TotalValue: React.FC<Props> = ( {data, portfolioChange} ) => {
     >
                     <Ionicons name={ `${!settings.darkMode ? "moon" : "light-up"}` } color={`${settings.darkMode ? "white" : "black"}`} size={30} />
         </TouchableOpacity>
-        <TouchableOpacity
-    >
-                    <Ionicons name={"open-book"} size={30}color={`${settings.darkMode ? "white" : "black"}`} />
-        </TouchableOpacity>
+        {settings.enableAISummaries && (
+  <TouchableOpacity
+    onPress={() => {
+      navigation.navigate("SummaryScreen", {
+        totalValue: data,
+        portfolioChange,
+        holdings,
+      });
+    }}
+  >
+    <Ionicons name="open-book" size={30} color={settings.darkMode ? "white" : "black"} />
+  </TouchableOpacity>
+)}
+
       </View>
     </ImageBackground>
   );

@@ -4,14 +4,17 @@ import { useRoute } from "@react-navigation/native";
 import { ETHERSCAN_API_Key } from "@env";
 import { ScreenHeader } from "components/ScreenHeader";
 import { AddToPortfolioConfirm } from "components/AddToPortfolioConfirm";
-import { utils } from "ethers";
+import { formatEther } from "ethers";
 import { Navbar } from "components/Navbar";
 import { OptionComponent } from "components/OptionComponent";
+
+
 export default function WalletDetailScreen() {
   const route = useRoute();
   const { walletInfo } = route.params as { walletInfo: { type: string; address: string } };
   const [walletData, setWalletData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
 
   useEffect(() => {
     setLoading(true);
@@ -48,6 +51,8 @@ export default function WalletDetailScreen() {
     );
   }
 
+  console.log("wallet data", walletData)
+
   const options = [
     {
       header: `Amount Held (${walletInfo.type === "bitcoin" ? "BTC" : "ETH"})`,
@@ -57,10 +62,11 @@ export default function WalletDetailScreen() {
         walletInfo.type === "bitcoin"
           ? (walletData.balance / 1e8).toFixed(8)
           : walletData.result
-            ? utils.formatEther(walletData.result)
+            ? formatEther(walletData.result)
             : "",
     },
   ];
+
 
   return (
     <View className="flex-1 h-full bg-brand-gray">
@@ -83,7 +89,7 @@ export default function WalletDetailScreen() {
             id: "ethereum",
             symbol: "eth",
             date: Date.now(),
-            amount: utils.formatEther(walletData.result),
+            amount: formatEther(walletData.result),
             type: "crypto",
           }}
         />

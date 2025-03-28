@@ -11,6 +11,7 @@ import AssetTransactionsScreen from 'screens/AssetTransactionScreen';
 
 import { SettingsProvider } from "./screens/Settings/settingsContext";
 import WalletDetailScreen from "screens/AddToPortfolioWallet";
+import SummaryScreen from "screens/SummaryScreen"
 import EntryScreen from "screens/EntryScreen";
 
 const Stack = createStackNavigator();
@@ -32,7 +33,11 @@ export default function App() {
               options={{ animation: "none" }}
               component={PortfolioScreen}
             />
-           
+           <Stack.Screen
+            name="SummaryScreen"
+            options={{ animation: "none"}}
+            component={SummaryScreen}
+           />
             <Stack.Screen
               name="AddToPortfolio"
               options={{ animation: "none" }}

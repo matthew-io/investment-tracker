@@ -24,6 +24,8 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
     const [currencies, setCurrencies] = useState<string[]>([]);
     const [selectedCurrency, setSelectedCurrency] = useState(settings.currency);
 
+    const summaryFrequencies = ["hourly", "daily", "weekly", "monthly"];
+
     const textColor = settings.darkMode ? "text-white" : "text-black"
     const bgColor = settings.darkMode ? "bg-brand-gray" : "bg-brand-white"
 
@@ -35,7 +37,7 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
     }, [data.noteValue, data.option]);
 
     useEffect(() => {
-        if (data.option === "Enable" || data.option === "Remove" || data.option === "changeCurrency" || data.option === "enableFaceId" || data.option=="newPage" || data.option == "enableAISummaries" || data.option == "changeNotes") {
+        if (data.option === "Enable" || data.option === "Remove" || data.option === "changeCurrency" || data.option === "enableFaceId" || data.option=="newPage" || data.option == "enableAISummaries" || data.option == "changeNotes" || data.option == "setSummaryFrequency") {
             setHasButton(true);
         } else {
             setHasButton(false);
@@ -65,7 +67,7 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
               value={data.textValue}
             />
         );
-    } else if (data.option === "Enable" || data.option === "Remove" || data.option === "changeCurrency" || data.option === "enableFaceId" || data.option == "newPage" || data.option == "enableAISummaries" || data.option == "changeNotes") {
+    } else if (data.option === "Enable" || data.option === "Remove" || data.option === "changeCurrency" || data.option === "enableFaceId" || data.option == "newPage" || data.option == "enableAISummaries" || data.option == "changeNotes" || data.option == "setSummaryFrequency") {
         rightComponent = <Ionicons name="chevron-right" color="white" size={24} />;
     } else if (data.option === "EnterDate") {
         rightComponent = (
@@ -173,10 +175,35 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
         } else if (data.option === "enableAISummaries") {
             return (
                 <Text className={`${textColor}`} style={styles.modalText}>
-                    {settings.faceIdEnabled ? "Confirm disabling AI summaries" : "Confirm enabling AI summaries"}
+                    {settings.enableAISummaries ? "Confirm disabling AI summaries" : "Confirm enabling AI summaries"}
                 </Text>
             );
-        
+        } else if (data.option === "setSummaryFrequency") {
+            return (
+                <>
+                    <Text className={`${textColor} mb-4`}>Select summary frequency:</Text>
+                    <View className="w-72" style={{ maxHeight: 200, backgroundColor: '#ababab', borderRadius: 12, padding: 10 }}>
+                        {summaryFrequencies.map((freq) => (
+                            <TouchableOpacity 
+                                key={freq}
+                                onPress={async () => {
+                                    const newSettings = { ...settings, summaryFrequency: freq };
+                                    await saveSettings(newSettings);
+                                }}
+                                style={{
+                                    paddingVertical: 8,
+                                    borderBottomWidth: 0.5,
+                                    borderColor: 'white',
+                                }}
+                            >
+                                <Text className={`${textColor}`}>
+                                    {freq} {settings.summaryFrequency === freq ? "✓" : ""}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                </>
+            );
         } else if (data.option == "changeNotes") {
             return (
                 <TextInput

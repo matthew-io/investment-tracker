@@ -13,7 +13,11 @@ import { insertAsset, insertPortfolio, insertTransactions, setupDatabase, update
 import '../../global.css';
 import { SettingsContext } from 'screens/Settings/settingsContext';
 import * as Notifications from "expo-notifications"
+import { LogBox } from 'react-native';
 
+LogBox.ignoreLogs([
+  'Warning: Text strings must be rendered within a <Text> component',
+]);
 
 export default function PortfolioScreen() {
   const navigation = useNavigation();
@@ -60,14 +64,14 @@ export default function PortfolioScreen() {
     }),
   });
 
-  useEffect(() => {
-    (async () => {
-      const { status } = await Notifications.requestPermissionsAsync();
-      if (status !== 'granted') {
-        alert('Please enable notifications in settings');
-      }
-    })();
-  }, []);
+  // useEffect(() => {
+  //   (async () => {
+  //     const { status } = await Notifications.requestPermissionsAsync();
+  //     if (status !== 'granted') {
+  //       alert('Please enable notifications in settings');
+  //     }
+  //   })();
+  // }, []);
   
   useEffect(() => {
     const fetchConversionRates = async () => {
@@ -207,67 +211,78 @@ export default function PortfolioScreen() {
         adjusted: "true",
         include_otc: "true"
       });
+
+      console.log("data: ", data)
+  
+      if (!data?.results || !Array.isArray(data.results)) {
+        console.warn("No stock data returned or rate limit hit:", data);
+        setAllStockData([]);
+        return;
+      }
+  
       const sortedData = data.results.sort((a, b) => b.v - a.v);
       const top1000ByVolume = sortedData.slice(0, 1000);
       setAllStockData(top1000ByVolume);
-      setLastStockFetch(now); 
+      setLastStockFetch(now);
     } catch (err) {
-      console.error("Stock API rate limit", err.message);
+      console.error("Stock API error:", err?.message ?? err);
+      setAllStockData([]); 
     } finally {
       setLoading(false);
     }
   };
-  
+    
   const computeGainersAndLosers = (holdings) => {
     if (!holdings.length) return { biggestGainer: null, biggestLoser: null };
     const sorted = [...holdings].sort((a, b) => (b.high24h || 0) - (a.high24h || 0));
+    console.log(sorted)
     return {
       biggestGainer: sorted[0],
       biggestLoser: sorted[sorted.length - 1],
     };
   }
 
-  const schedulePortfolioNotification = async ({
-    totalValue,
-    portfolioChange,
-    holdings,
-  }) => {
-    console.log("combined holdings 2: ", holdings)
-    const { biggestGainer, biggestLoser } = computeGainersAndLosers(holdings);
+  // const schedulePortfolioNotification = async ({
+  //   totalValue,
+  //   portfolioChange,
+  //   holdings,
+  // }) => {
+  //   console.log("combined holdings 2: ", holdings)
+  //   const { biggestGainer, biggestLoser } = computeGainersAndLosers(holdings);
 
-    const { status } = await Notifications.getPermissionsAsync();
-  if (status !== 'granted') {
-    const { status: newStatus } = await Notifications.requestPermissionsAsync();
-    if (newStatus !== 'granted') {
-      alert('Failed to get push token for push notification!');
-      return;
-    }
-  }
+  //   const { status } = await Notifications.getPermissionsAsync();
+  // if (status !== 'granted') {
+  //   const { status: newStatus } = await Notifications.requestPermissionsAsync();
+  //   if (newStatus !== 'granted') {
+  //     alert('Failed to get push token for push notification!');
+  //     return;
+  //   }
+  // }
   
-    const sign = portfolioChange >= 0 ? 'up' : 'down';
-    const pctString = portfolioChange.toFixed(2);
-    const bodyLines = [];
+  //   const sign = portfolioChange >= 0 ? 'up' : 'down';
+  //   const pctString = portfolioChange.toFixed(2);
+  //   const bodyLines = [];
   
-    if (biggestGainer) {
-      bodyLines.push(`Biggest gainer: ${biggestGainer.symbol.toUpperCase()} (${(biggestGainer.change24h || 0).toFixed(2)}%)`);
-    }
-    if (biggestLoser) {
-      bodyLines.push(`Biggest loser: ${biggestLoser.symbol.toUpperCase()} (${(biggestLoser.change24h || 0).toFixed(2)}%)`);
-    }
+  //   if (biggestGainer) {
+  //     bodyLines.push(`Biggest gainer: ${biggestGainer.symbol.toUpperCase()} (${(biggestGainer.change24h || 0).toFixed(2)}%)`);
+  //   }
+  //   if (biggestLoser) {
+  //     bodyLines.push(`Biggest loser: ${biggestLoser.symbol.toUpperCase()} (${(biggestLoser.change24h || 0).toFixed(2)}%)`);
+  //   }
   
-    await Notifications.scheduleNotificationAsync({
-      content: {
-        title: `Portfolio is ${sign} ${pctString}%`,
-        body: bodyLines.join('\n'),
-      },
-      trigger: {
-        hour: 0,
-        minute: 0,
-        second: 10,
-        repeats: true,
-      },
-    });
-  }
+  //   await Notifications.scheduleNotificationAsync({
+  //     content: {
+  //       title: `Portfolio is ${sign} ${pctString}%`,
+  //       body: bodyLines.join('\n'),
+  //     },
+  //     trigger: {
+  //       hour: 0,
+  //       minute: 0,
+  //       second: 10,
+  //       repeats: true,
+  //     },
+  //   });
+  // }
 
   const fetchAllCoinData = async () => {
     const now = Date.now();
@@ -344,24 +359,28 @@ export default function PortfolioScreen() {
       const newChanges: Record<string, number> = {};
 
       coinData.forEach((coin: any) => {
-        const match = dbData.find((row) => row.id === coin.id);
+        const match = dbData.find((row) => row.id.toLowerCase() === coin.id.toLowerCase());
+      
         if (match) {
-          newPrices[coin.id] = coin.current_price;
-          newIcons[coin.id] = coin.image;
-          newHighs[coin.id] = coin.high_24h;
-          newChanges[coin.id] = coin.price_change_percentage_24h_in_currency ?? 0;
+          const id = match.id; 
+          newPrices[id] = coin.current_price;
+          newIcons[id] = coin.image;
+          newHighs[id] = coin.high_24h;
+          newChanges[id] = coin.price_change_percentage_24h ?? 0;
         }
       });
-
       setPriceChanges(newChanges);
       setPrices(newPrices);
       setIcons(newIcons);
       setHighs(newHighs);  
+
+      console.log("coin IDs from API", coinData.map(c => c.id));
+console.log("coin IDs from DB", dbData.map(d => d.id));
   
       const newHoldings = dbData.map((row) => ({
         id: row.id,
         symbol: row.symbol,
-        name: row.name,
+        name: row.name ?? "Unnamed",
         quantity: parseFloat(row.quantity),
       }));
       setHoldings(newHoldings);
@@ -420,7 +439,7 @@ export default function PortfolioScreen() {
       const newHoldings = dbData.map((row) => ({
         id: row.id,
         symbol: row.symbol,
-        name: row.name,
+        name: row.name ?? "Unnamed",
         quantity: parseFloat(row.quantity),
       }));
       setStockHoldings(newHoldings);
@@ -454,52 +473,74 @@ const combinedHoldings = [
 
 
 useEffect(() => {
-  if (!cryptoLoaded || !stocksLoaded || !combinedHoldings.length) {
-    setPortfolioChange(0);
-    return;
-  }
+  if (!cryptoLoaded || !stocksLoaded || combinedHoldings.length === 0) return;
 
   let totalNow = 0;
   let totalPast = 0;
 
   for (const asset of combinedHoldings) {
-    const todayPrice = getPrice(asset);
-    totalNow += todayPrice * asset.quantity;
+    const priceNow = getPrice(asset);
+    totalNow += priceNow * asset.quantity;
 
     if (asset.type === "crypto") {
-      const changePct = priceChanges[asset.id] ?? 0;
-      const past = todayPrice / (1 + changePct / 100);
+      const changePct = priceChanges[asset.id];
+      if (changePct !== undefined) {
+        const priceThen = priceNow / (1 + changePct / 100);
+        totalPast += priceThen * asset.quantity;
+      } else {
+        totalPast += priceNow * asset.quantity; 
+      }
+    } else if (asset.type === "stock") {
+      const past = pastHighs[asset.symbol] ?? 0;
       totalPast += past * asset.quantity;
-    } else {
-      const yesterdayPrice = pastHighs[asset.symbol] ?? 0;
-      totalPast += yesterdayPrice * asset.quantity;
     }
   }
 
   const pct = totalPast > 0 ? ((totalNow - totalPast) / totalPast) * 100 : 0;
+  console.log("priceChanges", priceChanges);
   setPortfolioChange(pct);
-}, [combinedHoldings, highs, pastHighs, cryptoLoaded, stocksLoaded]);
+}, [combinedHoldings, priceChanges, pastHighs, cryptoLoaded, stocksLoaded]);
 
-const NOTIFY_INTERVAL_MS = 6 * 60 * 60 * 1000; 
 
-useEffect(() => {
-  const now = Date.now();
-
-  const ready = cryptoLoaded && stocksLoaded && combinedHoldings.length > 0;
-
-  if (
-    ready &&
-    (!lastNotifiedAt || now - lastNotifiedAt > NOTIFY_INTERVAL_MS)
-  ) {
-    schedulePortfolioNotification({
-      totalValue,
-      portfolioChange,
-      holdings: combinedHoldings,
-    });
-
-    setLastNotifiedAt(now);
+const getNotifyInterval = (frequency: string): number => {
+  switch (frequency) {
+    case "hourly":
+      return 60 * 60 * 1000;
+    case "daily":
+      return 24 * 60 * 60 * 1000;
+    case "weekly":
+      return 7 * 24 * 60 * 60 * 1000;
+    case "monthly":
+      return 30 * 24 * 60 * 60 * 1000;
+    default:
+      return 6 * 60 * 60 * 1000; 
   }
-}, [combinedHoldings, portfolioChange, cryptoLoaded, stocksLoaded]);
+};
+
+const notifyIntervalMs = getNotifyInterval(settings.summaryFrequency);
+
+// useEffect(() => {
+//   const now = Date.now();
+
+//   console.log(notifyIntervalMs)
+
+//   const ready = cryptoLoaded && stocksLoaded && combinedHoldings.length > 0;
+
+//   if (
+//     ready &&
+//     (!lastNotifiedAt || now - lastNotifiedAt > notifyIntervalMs)
+//   ) {
+//     schedulePortfolioNotification({
+//       totalValue,
+//       portfolioChange,
+//       holdings: combinedHoldings,
+//     });
+
+//     setLastNotifiedAt(now);
+//   }
+// }, [combinedHoldings, portfolioChange, cryptoLoaded, stocksLoaded]);
+
+console.log("Holdings going into <TotalValue />:", combinedHoldings);
 
 
 
@@ -512,8 +553,21 @@ return (
       </View>
     )}
     <StatusBar style="light" />
-    <TotalValue data={totalValue} portfolioChange={portfolioChange} />
-    <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
+<TotalValue
+  data={totalValue}
+  portfolioChange={portfolioChange}
+  holdings={combinedHoldings.map((item) => ({
+    ...item,
+    change24h:
+      item.type === "crypto"
+        ? priceChanges[item.id] ?? 0
+        : (() => {
+            const todayData = allStockData?.find((d: any) => d.T === item.symbol);
+            const todayHigh = todayData?.h ?? 0;
+            const pastHigh = pastHighs[item.symbol] ?? 0;
+            return pastHigh ? ((todayHigh - pastHigh) / pastHigh) * 100 : 0;
+          })(),
+  }))} />    <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
       {combinedHoldings.length > 0 &&
         combinedHoldings
           .sort((a, b) => {
@@ -523,26 +577,28 @@ return (
           })
           .map((item) => {
             const priceUsd = getPrice(item);
-            let change24h;
-            if (item.type === "stock") {
-              const todayData = allStockData && allStockData.find((d: any) => d.T === item.symbol);
-              const todayHigh = todayData ? todayData.h : 0;
-              const pastHigh = pastHighs[item.symbol] || 0;
-              change24h = pastHigh ? ((todayHigh - pastHigh) / pastHigh) * 100 : 0;
-            }
+            const change24h =
+            item.type === "crypto"
+              ? priceChanges[item.id] ?? 0
+              : (() => {
+                  const todayData = allStockData?.find((d: any) => d.T === item.symbol);
+                  const todayHigh = todayData?.h ?? 0;
+                  const pastHigh = pastHighs[item.symbol] ?? 0;
+                  return pastHigh ? ((todayHigh - pastHigh) / pastHigh) * 100 : 0;
+                })();
             const itemHigh24h = item.type === "crypto" ? highs[item.id] : undefined;
             return (
               <PortfolioItem
-                key={item.symbol}
-                data={{
-                  ...item,
-                  priceUsd,
-                  icon: item.type === "crypto" ? icons[item.id] : undefined,
-                  note: item.note ?? "",
-                  high24h: itemHigh24h,
-                  change24h,
-                }}
-              />
+              key={item.symbol}
+              data={{
+                ...item,
+                priceUsd,
+                icon: item.type === "crypto" ? icons[item.id] : undefined,
+                note: item.note ?? "",
+                high24h: itemHigh24h,
+                change24h,
+              }}
+            />
             );
           })}
     </ScrollView>
