@@ -48,7 +48,7 @@ export default function EntryScreen() {
   const fetchPortfolios = async () => {
     try {
       const results = await db.getAllAsync("SELECT * FROM portfolios");
-      console.log(results)
+      (results)
       setPortfolios(results);
     } catch (error) {
       console.error("Couldn't fetch portfolios, error: ", error);

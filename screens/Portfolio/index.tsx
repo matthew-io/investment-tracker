@@ -15,9 +15,11 @@ import { SettingsContext } from 'screens/Settings/settingsContext';
 import * as Notifications from "expo-notifications"
 import { LogBox } from 'react-native';
 
-LogBox.ignoreLogs([
-  'Warning: Text strings must be rendered within a <Text> component',
-]);
+// this error appears sporadically and i have no idea why.
+// explicitly ignoring it doesn't effect the function of the app at all
+  LogBox.ignoreLogs([
+    'Warning: Text strings must be rendered within a <Text> component',
+  ]);
 
 export default function PortfolioScreen() {
   const navigation = useNavigation();
@@ -72,6 +74,15 @@ export default function PortfolioScreen() {
   //     }
   //   })();
   // }, []);
+
+  useEffect(() => {
+    const fetchTransactionData = async () => {
+      const statement = `
+      SELECT * FROM transactions`
+      let result = await db.getAllAsync(statement)
+    }
+    fetchTransactionData()
+  }, [])
   
   useEffect(() => {
     const fetchConversionRates = async () => {
@@ -108,8 +119,6 @@ export default function PortfolioScreen() {
     };
     initDB();
   }, []);
-
-
 
   useEffect(() => {
     const combinedHoldings = [
@@ -159,9 +168,6 @@ export default function PortfolioScreen() {
         );
 
         const assetRows = await db.getAllAsync(`SELECT * FROM assets WHERE asset_id = '${newData.id}';`);
-        console.log("Asset row after upsert:", assetRows);
-
-        console.log("New data: ", newData)
     
         const txData = {
           tx_id: `tx_${Date.now()}`,
@@ -201,19 +207,19 @@ export default function PortfolioScreen() {
   const fetchAllStockData = async () => {
     const now = Date.now();
     if (lastStockFetch && now - lastStockFetch < 60 * 1000) {
-      console.log("Using cached stock data");
       return;
     }
   
     try {
       setLoading(true);
-      const data = await rest.stocks.aggregatesGroupedDaily("2025-03-20", {
+      const searchDate = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
+      const formattedDate = searchDate.toISOString().split('T')[0];
+      const data = await rest.stocks.
+      aggregatesGroupedDaily(formattedDate, {
         adjusted: "true",
         include_otc: "true"
       });
 
-      console.log("data: ", data)
-  
       if (!data?.results || !Array.isArray(data.results)) {
         console.warn("No stock data returned or rate limit hit:", data);
         setAllStockData([]);
@@ -235,7 +241,6 @@ export default function PortfolioScreen() {
   const computeGainersAndLosers = (holdings) => {
     if (!holdings.length) return { biggestGainer: null, biggestLoser: null };
     const sorted = [...holdings].sort((a, b) => (b.high24h || 0) - (a.high24h || 0));
-    console.log(sorted)
     return {
       biggestGainer: sorted[0],
       biggestLoser: sorted[sorted.length - 1],
@@ -287,7 +292,6 @@ export default function PortfolioScreen() {
   const fetchAllCoinData = async () => {
     const now = Date.now();
     if (lastCoinFetch && now - lastCoinFetch < 60 * 1000) {
-      console.log("Using cached coin data");
       return;
     }
   
@@ -315,7 +319,6 @@ export default function PortfolioScreen() {
   const fetchPersonalCoinData = async () => {
     const now = Date.now();
     if (lastPersonalCoinFetch[portfolioId] && now - lastPersonalCoinFetch[portfolioId] < 60 * 1000) {
-      console.log("Using cached personal coin data");
       return;
     }
   
@@ -335,7 +338,6 @@ export default function PortfolioScreen() {
       const dbData = await db.getAllAsync(query);
   
       if (!dbData || dbData.length === 0) {
-        console.log("No crypto holdings found in database.");
         setHoldings([]);
         return;
       }
@@ -374,9 +376,6 @@ export default function PortfolioScreen() {
       setIcons(newIcons);
       setHighs(newHighs);  
 
-      console.log("coin IDs from API", coinData.map(c => c.id));
-console.log("coin IDs from DB", dbData.map(d => d.id));
-  
       const newHoldings = dbData.map((row) => ({
         id: row.id,
         symbol: row.symbol,
@@ -400,7 +399,6 @@ console.log("coin IDs from DB", dbData.map(d => d.id));
   const fetchPersonalStockData = async () => {
     const now = Date.now();
     if (lastPersonalStockFetch[portfolioId] && now - lastPersonalStockFetch[portfolioId] < 60 * 1000) {
-      console.log("Using cached personal stock data");
       return;
     }
   
@@ -497,7 +495,6 @@ useEffect(() => {
   }
 
   const pct = totalPast > 0 ? ((totalNow - totalPast) / totalPast) * 100 : 0;
-  console.log("priceChanges", priceChanges);
   setPortfolioChange(pct);
 }, [combinedHoldings, priceChanges, pastHighs, cryptoLoaded, stocksLoaded]);
 
@@ -540,11 +537,6 @@ const notifyIntervalMs = getNotifyInterval(settings.summaryFrequency);
 //   }
 // }, [combinedHoldings, portfolioChange, cryptoLoaded, stocksLoaded]);
 
-console.log("Holdings going into <TotalValue />:", combinedHoldings);
-
-
-
-
 return (
   <View className={`flex-1 ${bgColor}`}>
     {loading && (
@@ -567,7 +559,8 @@ return (
             const pastHigh = pastHighs[item.symbol] ?? 0;
             return pastHigh ? ((todayHigh - pastHigh) / pastHigh) * 100 : 0;
           })(),
-  }))} />    <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
+  }))} />    
+  <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
       {combinedHoldings.length > 0 &&
         combinedHoldings
           .sort((a, b) => {

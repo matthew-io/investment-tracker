@@ -22,7 +22,6 @@ const parseWalletData = (qrData: string): { type: string; address: string } => {
 }
 
 const handleQrCodeScanner = (barcode: any) => {
-  console.log("Raw QR data:", barcode);
   if (barcode.data) {
     const walletInfo = parseWalletData(barcode.data);
     navigation.navigate("AddToPortfolioWallet", { walletInfo })

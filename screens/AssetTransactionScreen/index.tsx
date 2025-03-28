@@ -17,7 +17,6 @@ export default function AssetTransactionsScreen({ route }) {
     const fetchTransactions = async () => {
       const query = `SELECT * FROM transactions WHERE asset_id = ?`;
       const result = await db.getAllAsync(query, [assetId]);
-      console.log("resutlresultresu: ", result);
       setTransactions(result);
     };
   
@@ -47,8 +46,6 @@ export default function AssetTransactionsScreen({ route }) {
         noteValue: note,
         onChangeNotesText: async (newNote) => {
             try {
-                console.log("Updating tx_id:", tx_id, "with note:", newNote);
-        
                 await db.execAsync(
                     `UPDATE transactions SET note = ? WHERE tx_id = ?`,
                     [newNote, tx_id]
@@ -58,14 +55,10 @@ export default function AssetTransactionsScreen({ route }) {
                     `SELECT note FROM transactions WHERE tx_id = ?`,
                     [tx_id]
                 );
-                console.log("Verified updated note:", updated?.note);
-        
                 const updatedTransactions = transactions.map((t) =>
                     t.tx_id === tx_id ? { ...t, note: newNote } : t
                 );
                 setTransactions(updatedTransactions);
-                
-                console.log("State updated with new transactions");
             } catch (error) {
                 console.error("Failed to update note:", error);
             }

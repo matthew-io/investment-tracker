@@ -53,7 +53,6 @@ export const updateTransaction = async (tx: any) => {
           note = '${tx.note ?? ""}'
       WHERE tx_id = '${tx.tx_id}'
     `);
-    console.log("Transaction successfully updated!");
   } catch (error) {
     console.error("Couldn't update transaction, error: ", error);
   }
@@ -68,7 +67,6 @@ export const insertPortfolio = async (portfolio_id: string, name: string) => {
         ON CONFLICT(portfolio_id) DO UPDATE SET
           name = EXCLUDED.name
       `);
-      console.log("Portfolio inserted/updated successfully!");
     } catch (error) {
       console.error("Couldn't insert portfolio into DB, error: ", error);
     }
@@ -96,8 +94,6 @@ export const insertPortfolio = async (portfolio_id: string, name: string) => {
             asset_id = '${asset_id}'
         `);
       }
-      
-      console.log("Asset inserted/updated successfully!");
     } catch (e) {
       console.error("Couldn't insert asset into DB, error: ", e);
     }
@@ -131,7 +127,6 @@ export const insertTransactions = async (tx: any | any[]) => {
           VALUES ('${tx.tx_id}', '${tx.portfolio_id}', '${tx.asset_id}', ${tx.quantity}, ${tx.price ?? null}, '${tx.date ?? ""}', '${tx.note ?? ""}')
         `);
       }
-      console.log("Transaction(s) successfully inserted!");
     } catch (error) {
       console.error("Couldn't insert transaction(s), error: ", error);
     }

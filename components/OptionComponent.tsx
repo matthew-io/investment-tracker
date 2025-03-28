@@ -90,16 +90,12 @@ export const OptionComponent: React.FC<Props> = ({ data }) => {
 
     const handleConfirm = async () => {
         if (data.option === "changeNotes") {
-            console.log("Committing note:", notesText);
             try {
                 await data.onChangeNotesText?.(notesText);
-                console.log("Note update completed");
             } catch (error) {
                 console.error("Error updating note:", error);
             }
         }
-        
-    
         setModalOpen(false);
     
         if (data.option === "Remove") {

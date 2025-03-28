@@ -38,7 +38,6 @@ export const fetchPersonalCoinData = async () => {
       const dbData = await db.getAllAsync("SELECT id, symbol, amount, note FROM test");
   
       if (dbData.length === 0) {
-        console.log("No holdings found in database.");
         setLoading(false);
         return;
       }
@@ -56,8 +55,6 @@ export const fetchPersonalCoinData = async () => {
   
       setHoldings(dbData);
 
-      console.log("DB data", dbData)
-  
       const newPrices: Record<string, number> = {};
       const newIcons: Record<string, string> = {};
   
@@ -87,8 +84,5 @@ export const getCurrencyData = async () => {
 
     const response = await fetch(url, options);
     const data = await response.json();
-
-    console.log("Currency data: ", data)
-
     
 }

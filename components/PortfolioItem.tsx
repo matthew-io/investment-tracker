@@ -8,7 +8,7 @@ type Props = {
     data: ItemData;
 };
 
-
+// AI was used to generate this list because doing it manually would take an unnecessarily long time
 const currencySymbols: Record<string, string> = {
     ADA: "₳",       // Cardano
     AED: "د.إ",     // United Arab Emirates Dirham
@@ -202,10 +202,10 @@ const currencySymbols: Record<string, string> = {
     const bgColor = settings.darkMode ? "bg-brand-gray" : "bg-brand-gray"
   
     const change = data.change24h ?? 0;
-const formattedChange = change.toLocaleString(undefined, { 
-  maximumFractionDigits: 2,
-  minimumFractionDigits: 2 
-});
+    const formattedChange = change.toLocaleString(undefined, { 
+      maximumFractionDigits: 2,
+      minimumFractionDigits: 2 
+    });
 
 const changeComponent = (
   <Text

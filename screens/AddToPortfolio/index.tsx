@@ -66,9 +66,6 @@ export default function AddToPortfolioScreen() {
         }
       ];
 
-      console.log(selectedValue)
-      
-
     return (
         <View className={`${bgColor} h-full`}>
             <ScreenHeader data={selectedValue.ticker ? `${selectedValue.ticker}/${settings.currency}` : `${selectedValue.label.toUpperCase()}/${settings.currency}`} image={selectedValue.image} />

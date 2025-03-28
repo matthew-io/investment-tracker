@@ -17,17 +17,6 @@ export default function AssetInfoScreen() {
     const [note, setNote] = useState(assetData.note);
     const [amount, setAmount] = useState(assetData.amount ? assetData.amount.toString() : "")
 
-    const test= async () => {
-        let statement = `
-        SELECT * FROM transactions`
-        let result = await db.getAllAsync(statement)
-        console.log("result: ", result)
-    };
-
-    useEffect(() => {
-        test();
-    }, [])
-
     const textColor = settings.darkMode ? "text-white" : "text-black"
     const bgColor = settings.darkMode ? "bg-brand-gray" : "bg-brand-white"
 

@@ -51,8 +51,6 @@ export default function WalletDetailScreen() {
     );
   }
 
-  console.log("wallet data", walletData)
-
   const options = [
     {
       header: `Amount Held (${walletInfo.type === "bitcoin" ? "BTC" : "ETH"})`,
