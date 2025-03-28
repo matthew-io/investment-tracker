@@ -7,6 +7,7 @@ import { SettingsContext } from "screens/Settings/settingsContext";
 import { BlurView } from "expo-blur";
 import { SelectList } from 'react-native-dropdown-select-list'
 import * as LocalAuthentication from "expo-local-authentication";
+import { setupDatabase } from "utils/dbUtil";
 
 
 export default function EntryScreen() {
@@ -19,7 +20,14 @@ export default function EntryScreen() {
   const { settings, saveSettings } = useContext(SettingsContext)
 
   useEffect(() => {
-    fetchPortfolios();
+    (async () => {
+      try {
+        await setupDatabase();
+        await fetchPortfolios();
+      } catch (error) {
+        console.error("Couldn't set up DB or fetch portfolios, erorr:", error);
+      }
+    })();
   }, []);
 
   const handleEnter = async () => {
