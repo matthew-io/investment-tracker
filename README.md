@@ -21,6 +21,6 @@ Once you have the required API keys, you'll need to create a dotenv that follows
 ``
 COINGECKO_API_KEY=MY_API_KEY
 POLYGON_IO_API_KEY=MY_API_KEY
-ETHERSCAN_API_Key=MY_API_KEY
+ETHERSCAN_API_KEY=MY_API_KEY
 OPENAI_API_KEY=MY_API_KEY
 ``
